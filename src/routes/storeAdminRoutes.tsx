@@ -9,6 +9,7 @@ const Pagamentos = lazy(() => import('@/pages/store-admin/Pagamentos'));
 const Contratos = lazy(() => import('@/pages/store-admin/Contratos'));
 const Veiculos = lazy(() => import('@/pages/store-admin/Veiculos'));
 const VeiculoDetalhes = lazy(() => import('@/pages/store-admin/VeiculoDetalhes'));
+const VeiculoEdicao = lazy(() => import('@/pages/store-admin/VeiculoEdicao'));
 const Propostas = lazy(() => import('@/pages/store-admin/Propostas'));
 const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
@@ -65,6 +66,17 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
       >
         <VeiculoDetalhes />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/veiculos/:id/editar',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
+      >
+        <VeiculoEdicao />
       </ProtectedRoute>
     ),
   },
