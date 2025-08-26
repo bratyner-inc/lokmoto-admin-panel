@@ -1,6 +1,7 @@
 export enum UserRole {
   GLOBAL_ADMIN = 'global_admin',
-  STORE_ADMIN = 'store_admin'
+  STORE_ADMIN = 'store_admin',
+  STORE_EMPLOYEE = 'store_employee',
 }
 
 export interface User {
@@ -43,14 +44,19 @@ export const PERMISSIONS = {
   MANAGE_CLIENTS: 'manage_clients',
   MANAGE_FINANCIAL: 'manage_financial',
   MANAGE_BANNERS: 'manage_banners',
+  MANAGE_STORES: 'manage_stores',
   
   // Store Admin permissions
-  VIEW_CLIENTS: 'view_clients',
-  MANAGE_PAYMENTS: 'manage_payments',
-  MANAGE_CONTRACTS: 'manage_contracts',
   MANAGE_VEHICLES: 'manage_vehicles',
+  MANAGE_CONTRACTS: 'manage_contracts',
+  MANAGE_PAYMENTS: 'manage_payments',
   MANAGE_PROPOSALS: 'manage_proposals',
-  MANAGE_SUBSCRIPTION: 'manage_subscription'
+  MANAGE_SUBSCRIPTION: 'manage_subscription',
+  
+  // Common permissions
+  VIEW_CLIENTS: 'view_clients',
+  VIEW_VEHICLES: 'view_vehicles',
+  VIEW_CONTRACTS: 'view_contracts',
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -60,14 +66,20 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.MANAGE_USERS,
     PERMISSIONS.MANAGE_CLIENTS,
     PERMISSIONS.MANAGE_FINANCIAL,
-    PERMISSIONS.MANAGE_BANNERS
+    PERMISSIONS.MANAGE_BANNERS,
+    PERMISSIONS.MANAGE_STORES,
   ],
   [UserRole.STORE_ADMIN]: [
-    PERMISSIONS.VIEW_CLIENTS,
-    PERMISSIONS.MANAGE_PAYMENTS,
-    PERMISSIONS.MANAGE_CONTRACTS,
     PERMISSIONS.MANAGE_VEHICLES,
+    PERMISSIONS.MANAGE_CONTRACTS,
+    PERMISSIONS.MANAGE_PAYMENTS,
     PERMISSIONS.MANAGE_PROPOSALS,
-    PERMISSIONS.MANAGE_SUBSCRIPTION
-  ]
+    PERMISSIONS.MANAGE_SUBSCRIPTION,
+    PERMISSIONS.VIEW_CLIENTS,
+  ],
+  [UserRole.STORE_EMPLOYEE]: [
+    PERMISSIONS.VIEW_VEHICLES,
+    PERMISSIONS.VIEW_CONTRACTS,
+    PERMISSIONS.VIEW_CLIENTS,
+  ],
 };
