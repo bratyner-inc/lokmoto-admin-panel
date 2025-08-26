@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +41,7 @@ const mockBanners = [
 ];
 
 export default function Banners() {
+  const navigate = useNavigate();
   const getPositionBadge = (position: string) => {
     switch (position) {
       case 'hero':
@@ -78,7 +80,10 @@ export default function Banners() {
             Gerencie banners e campanhas promocionais
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
+        <Button 
+          className="bg-primary hover:bg-primary-dark"
+          onClick={() => navigate('/banners/novo')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Novo Banner
         </Button>
@@ -184,7 +189,11 @@ export default function Banners() {
                   </Button>
                   
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => navigate(`/banners/editar/${banner.id}`)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
@@ -208,11 +217,19 @@ export default function Banners() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col gap-2"
+              onClick={() => navigate('/banners/novo')}
+            >
               <Plus className="h-6 w-6" />
               <span className="text-sm">Criar Banner Hero</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col gap-2"
+              onClick={() => navigate('/banners/novo')}
+            >
               <Plus className="h-6 w-6" />
               <span className="text-sm">Criar Banner Sidebar</span>
             </Button>

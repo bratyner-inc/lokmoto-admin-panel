@@ -8,6 +8,7 @@ const Clientes = lazy(() => import('@/pages/global-admin/Clientes'));
 const Usuarios = lazy(() => import('@/pages/global-admin/Usuarios'));
 const Financeiro = lazy(() => import('@/pages/global-admin/Financeiro'));
 const Banners = lazy(() => import('@/pages/global-admin/Banners'));
+const BannerForm = lazy(() => import('@/pages/global-admin/BannerForm'));
 
 export const globalAdminRoutes: RouteObject[] = [
   {
@@ -51,6 +52,28 @@ export const globalAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_BANNERS}
       >
         <Banners />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/banners/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_BANNERS}
+      >
+        <BannerForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/banners/editar/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_BANNERS}
+      >
+        <BannerForm />
       </ProtectedRoute>
     ),
   },
