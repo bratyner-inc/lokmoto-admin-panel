@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Users, Plus, Search, Edit, Trash2, Eye, EyeOff, Filter, Shield, Building, Mail, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { InlineLoader } from '@/components/ui/page-loader';
 import { UserRole } from '@/types';
 
 // Mock data
@@ -56,6 +57,16 @@ export default function Usuarios() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDeleteUser = (userId: string) => {
+    // Simulate API call
+    toast({
+      title: 'Usuário excluído',
+      description: 'O usuário foi excluído com sucesso.',
+    });
+  };
+
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
       case UserRole.GLOBAL_ADMIN:
@@ -80,6 +91,10 @@ export default function Usuarios() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
+
+  if (isLoading) {
+    return <InlineLoader message="Carregando usuários..." />;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -322,12 +337,4 @@ export default function Usuarios() {
       </Card>
     </div>
   );
-
-  function handleDeleteUser(userId: string) {
-    // Simulate API call
-    toast({
-      title: 'Usuário excluído',
-      description: 'O usuário foi excluído com sucesso.',
-    });
-  }
 }

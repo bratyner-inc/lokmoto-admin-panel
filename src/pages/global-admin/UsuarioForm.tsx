@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, User, Shield, Mail, Phone, Building, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole, Permission, PERMISSIONS } from '@/types';
+import { FullPageLoader } from '@/components/ui/page-loader';
 
 const userSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -107,6 +108,7 @@ export default function UsuarioForm() {
   // Simulate loading user data for editing
   useEffect(() => {
     if (isEditing) {
+      setIsLoading(true);
       // In a real app, this would be an API call
       setTimeout(() => {
         form.reset({
@@ -119,7 +121,8 @@ export default function UsuarioForm() {
           permissions: mockUser.permissions,
         });
         setSelectedRole(mockUser.role);
-      }, 500);
+        setIsLoading(false);
+      }, 1500);
     }
   }, [isEditing, form]);
 
@@ -193,6 +196,10 @@ export default function UsuarioForm() {
   };
 
   const availablePermissions = Object.values(PERMISSIONS);
+
+  if (isLoading && isEditing) {
+    return <FullPageLoader message="Carregando dados do usuário..." />;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
