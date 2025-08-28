@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Plus, Search, Calendar, User, Car, Eye, Edit, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { FileText, Plus, Search, Calendar, User, Car, Eye, Edit, Download, Trash2, Filter } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data
 const mockContracts = [
@@ -48,6 +52,30 @@ const mockContracts = [
 ];
 
 export default function Contratos() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const filteredContracts = mockContracts.filter(contract => {
+    const matchesSearch = 
+      contract.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contract.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contract.vehicleModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contract.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = filterStatus === 'all' || contract.status === filterStatus;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleDeleteContract = (contractId: string) => {
+    toast({
+      title: 'Contrato excluído',
+      description: 'O contrato foi excluído com sucesso.',
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
@@ -105,10 +133,15 @@ export default function Contratos() {
             Gerencie contratos de locação da loja
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Contrato
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            className="bg-primary hover:bg-primary-dark"
+            onClick={() => navigate('/contratos/novo')}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Contrato
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -155,23 +188,40 @@ export default function Contratos() {
         </Card>
       </div>
 
-      {/* Search */}
+      {/* Search and Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <input 
-              type="text"
-              placeholder="Buscar por cliente, veículo ou ID do contrato..." 
-              className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background"
-            />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input 
+                type="text"
+                placeholder="Buscar por cliente, veículo ou ID do contrato..." 
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 border border-input rounded-md bg-background text-sm"
+              >
+                <option value="all">Todos os Status</option>
+                <option value="active">Ativos</option>
+                <option value="completed">Concluídos</option>
+                <option value="cancelled">Cancelados</option>
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Contracts List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {mockContracts.map((contract) => (
+        {filteredContracts.map((contract) => (
           <Card key={contract.id} className="shadow-card hover:shadow-elegant transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -233,11 +283,21 @@ export default function Contratos() {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-3 border-t">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => navigate(`/contratos/${contract.id}`)}
+                  >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => navigate(`/contratos/editar/${contract.id}`)}
+                  >
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
@@ -245,6 +305,30 @@ export default function Contratos() {
                     <Download className="h-4 w-4 mr-1" />
                     PDF
                   </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive hover:text-white">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir Contrato</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir o contrato {contract.id}? Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleDeleteContract(contract.id)}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
@@ -259,7 +343,11 @@ export default function Contratos() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-16 flex flex-col gap-1">
+            <Button 
+              variant="outline" 
+              className="h-16 flex flex-col gap-1"
+              onClick={() => navigate('/contratos/novo')}
+            >
               <Plus className="h-5 w-5" />
               <span className="text-sm">Novo Contrato</span>
             </Button>
@@ -278,6 +366,32 @@ export default function Contratos() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Empty State */}
+      {filteredContracts.length === 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                {searchTerm || filterStatus !== 'all' ? 'Nenhum contrato encontrado' : 'Nenhum contrato cadastrado'}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm || filterStatus !== 'all' 
+                  ? 'Tente ajustar os filtros de busca.'
+                  : 'Comece criando seu primeiro contrato de locação.'
+                }
+              </p>
+              {!searchTerm && filterStatus === 'all' && (
+                <Button onClick={() => navigate('/contratos/novo')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Primeiro Contrato
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

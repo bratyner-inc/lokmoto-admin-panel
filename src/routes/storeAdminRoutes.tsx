@@ -7,6 +7,8 @@ import { UserRole, PERMISSIONS } from '@/types';
 const ClientesLoja = lazy(() => import('@/pages/store-admin/ClientesLoja'));
 const Pagamentos = lazy(() => import('@/pages/store-admin/Pagamentos'));
 const Contratos = lazy(() => import('@/pages/store-admin/Contratos'));
+const ContratoForm = lazy(() => import('@/pages/store-admin/ContratoForm'));
+const ContratoDetalhes = lazy(() => import('@/pages/store-admin/ContratoDetalhes'));
 const Veiculos = lazy(() => import('@/pages/store-admin/Veiculos'));
 const VeiculoDetalhes = lazy(() => import('@/pages/store-admin/VeiculoDetalhes'));
 const VeiculoEdicao = lazy(() => import('@/pages/store-admin/VeiculoEdicao'));
@@ -44,6 +46,39 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
       >
         <Contratos />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/contratos/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
+      >
+        <ContratoForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/contratos/editar/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
+      >
+        <ContratoForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/contratos/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
+      >
+        <ContratoDetalhes />
       </ProtectedRoute>
     ),
   },
