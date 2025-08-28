@@ -219,23 +219,23 @@ export default function UsuarioForm() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Informações Básicas
-              </CardTitle>
-              <CardDescription>
-                Dados pessoais e de contato do usuário
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Basic Information */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Informações Básicas
+                  </CardTitle>
+                  <CardDescription>
+                    Dados pessoais e de contato do usuário
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   {/* Name */}
                   <FormField
                     control={form.control}
@@ -358,254 +358,253 @@ export default function UsuarioForm() {
                       </FormItem>
                     )}
                   />
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Role and Store */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Função e Acesso
-              </CardTitle>
-              <CardDescription>
-                Defina o papel e a loja do usuário
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Role */}
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Função *</FormLabel>
-                    <Select onValueChange={handleRoleChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a função" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value={UserRole.GLOBAL_ADMIN}>
-                          Admin Global
-                        </SelectItem>
-                        <SelectItem value={UserRole.STORE_ADMIN}>
-                          Admin de Loja
-                        </SelectItem>
-                        <SelectItem value={UserRole.STORE_EMPLOYEE}>
-                          Funcionário
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Store Selection (only for non-global admin) */}
-              {selectedRole !== UserRole.GLOBAL_ADMIN && (
-                <FormField
-                  control={form.control}
-                  name="storeId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Loja *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a loja" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {mockStores.map((store) => (
-                            <SelectItem key={store.id} value={store.id}>
-                              <div className="flex items-center gap-2">
-                                <Building className="h-4 w-4" />
-                                {store.name}
-                              </div>
+              {/* Role and Store */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Função e Acesso
+                  </CardTitle>
+                  <CardDescription>
+                    Defina o papel e a loja do usuário
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Role */}
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Função *</FormLabel>
+                        <Select onValueChange={handleRoleChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione a função" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={UserRole.GLOBAL_ADMIN}>
+                              Admin Global
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
+                            <SelectItem value={UserRole.STORE_ADMIN}>
+                              Admin de Loja
+                            </SelectItem>
+                            <SelectItem value={UserRole.STORE_EMPLOYEE}>
+                              Funcionário
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Store Selection (only for non-global admin) */}
+                  {selectedRole !== UserRole.GLOBAL_ADMIN && (
+                    <FormField
+                      control={form.control}
+                      name="storeId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Loja *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a loja" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {mockStores.map((store) => (
+                                <SelectItem key={store.id} value={store.id}>
+                                  <div className="flex items-center gap-2">
+                                    <Building className="h-4 w-4" />
+                                    {store.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   )}
-                />
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Permissions */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Permissões
-              </CardTitle>
-              <CardDescription>
-                Selecione as permissões específicas do usuário
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name="permissions"
-                render={() => (
-                  <FormItem>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {availablePermissions.map((permission) => (
-                        <FormField
-                          key={permission}
-                          control={form.control}
-                          name="permissions"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={permission}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(permission)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, permission])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== permission
-                                            )
-                                          )
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  {getPermissionLabel(permission)}
-                                </FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
+              {/* Permissions */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Permissões
+                  </CardTitle>
+                  <CardDescription>
+                    Selecione as permissões específicas do usuário
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="permissions"
+                    render={() => (
+                      <FormItem>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {availablePermissions.map((permission) => (
+                            <FormField
+                              key={permission}
+                              control={form.control}
+                              name="permissions"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={permission}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(permission)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...field.value, permission])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  (value) => value !== permission
+                                                )
+                                              )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="text-sm font-normal">
+                                      {getPermissionLabel(permission)}
+                                    </FormLabel>
+                                  </FormItem>
+                                )
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center gap-3">
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="bg-primary hover:bg-primary-dark"
+                >
+                  {isLoading ? 'Salvando...' : (isEditing ? 'Atualizar Usuário' : 'Criar Usuário')}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate('/usuarios')}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="space-y-6">
+              {/* User Summary */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Resumo</CardTitle>
+                  <CardDescription>
+                    Visualização das configurações
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium">Nome</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {form.watch('name') || 'Nome do usuário'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Email</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {form.watch('email') || 'email@exemplo.com'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Função</Label>
+                    <div className="mt-1">
+                      <Badge variant="outline">
+                        {getRoleLabel(selectedRole)}
+                      </Badge>
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
+                  </div>
 
-          {/* Submit Buttons */}
-          <div className="flex items-center gap-3">
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              className="bg-primary hover:bg-primary-dark"
-              onClick={form.handleSubmit(onSubmit)}
-            >
-              {isLoading ? 'Salvando...' : (isEditing ? 'Atualizar Usuário' : 'Criar Usuário')}
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate('/usuarios')}
-            >
-              Cancelar
-            </Button>
+                  {selectedRole !== UserRole.GLOBAL_ADMIN && form.watch('storeId') && (
+                    <div>
+                      <Label className="text-sm font-medium">Loja</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {mockStores.find(s => s.id === form.watch('storeId'))?.name || 'Não selecionada'}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <Label className="text-sm font-medium">Status</Label>
+                    <div className="mt-1">
+                      <Badge variant={form.watch('isActive') ? 'default' : 'secondary'}>
+                        {form.watch('isActive') ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label className="text-sm font-medium">Permissões ({form.watch('permissions')?.length || 0})</Label>
+                    <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                      {form.watch('permissions')?.map((permission) => (
+                        <Badge key={permission} variant="outline" className="text-xs block w-fit">
+                          {getPermissionLabel(permission)}
+                        </Badge>
+                      )) || <p className="text-xs text-muted-foreground">Nenhuma permissão selecionada</p>}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Tips */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Dicas</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div>
+                    <strong>Admin Global:</strong>
+                    <p className="text-muted-foreground">Acesso total ao sistema, todas as lojas</p>
+                  </div>
+                  <div>
+                    <strong>Admin de Loja:</strong>
+                    <p className="text-muted-foreground">Gerencia uma loja específica</p>
+                  </div>
+                  <div>
+                    <strong>Funcionário:</strong>
+                    <p className="text-muted-foreground">Acesso limitado às operações básicas</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-
-        {/* Summary */}
-        <div className="space-y-6">
-          {/* User Summary */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle>Resumo</CardTitle>
-              <CardDescription>
-                Visualização das configurações
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Nome</Label>
-                <p className="text-sm text-muted-foreground">
-                  {form.watch('name') || 'Nome do usuário'}
-                </p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">Email</Label>
-                <p className="text-sm text-muted-foreground">
-                  {form.watch('email') || 'email@exemplo.com'}
-                </p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">Função</Label>
-                <div className="mt-1">
-                  <Badge variant="outline">
-                    {getRoleLabel(selectedRole)}
-                  </Badge>
-                </div>
-              </div>
-
-              {selectedRole !== UserRole.GLOBAL_ADMIN && form.watch('storeId') && (
-                <div>
-                  <Label className="text-sm font-medium">Loja</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {mockStores.find(s => s.id === form.watch('storeId'))?.name || 'Não selecionada'}
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <Label className="text-sm font-medium">Status</Label>
-                <div className="mt-1">
-                  <Badge variant={form.watch('isActive') ? 'default' : 'secondary'}>
-                    {form.watch('isActive') ? 'Ativo' : 'Inativo'}
-                  </Badge>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <Label className="text-sm font-medium">Permissões ({form.watch('permissions')?.length || 0})</Label>
-                <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                  {form.watch('permissions')?.map((permission) => (
-                    <Badge key={permission} variant="outline" className="text-xs block w-fit">
-                      {getPermissionLabel(permission)}
-                    </Badge>
-                  )) || <p className="text-xs text-muted-foreground">Nenhuma permissão selecionada</p>}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tips */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle>Dicas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div>
-                <strong>Admin Global:</strong>
-                <p className="text-muted-foreground">Acesso total ao sistema, todas as lojas</p>
-              </div>
-              <div>
-                <strong>Admin de Loja:</strong>
-                <p className="text-muted-foreground">Gerencia uma loja específica</p>
-              </div>
-              <div>
-                <strong>Funcionário:</strong>
-                <p className="text-muted-foreground">Acesso limitado às operações básicas</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        </form>
+      </Form>
     </div>
   );
 }
