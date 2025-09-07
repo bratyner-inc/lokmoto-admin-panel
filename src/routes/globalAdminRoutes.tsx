@@ -5,6 +5,8 @@ import { UserRole, PERMISSIONS } from '@/types';
 
 // Lazy loading das páginas do Admin Global
 const Clientes = lazy(() => import('@/pages/global-admin/Clientes'));
+const ClienteForm = lazy(() => import('@/pages/global-admin/ClienteForm'));
+const ClienteDetalhes = lazy(() => import('@/pages/global-admin/ClienteDetalhes'));
 const Usuarios = lazy(() => import('@/pages/global-admin/Usuarios'));
 const UsuarioForm = lazy(() => import('@/pages/global-admin/UsuarioForm'));
 const Financeiro = lazy(() => import('@/pages/global-admin/Financeiro'));
@@ -20,6 +22,39 @@ export const globalAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
       >
         <Clientes />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
+      >
+        <ClienteForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes/editar/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
+      >
+        <ClienteForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
+      >
+        <ClienteDetalhes />
       </ProtectedRoute>
     ),
   },

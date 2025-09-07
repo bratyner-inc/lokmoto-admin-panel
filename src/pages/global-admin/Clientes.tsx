@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Mock data
 const mockClients = [
@@ -40,6 +42,14 @@ const mockClients = [
 ];
 
 export default function Clientes() {
+  const navigate = useNavigate();
+
+  const handleDelete = (clientId: string, clientName: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir o cliente ${clientName}?`)) {
+      // Simular API call
+      toast.success('Cliente excluído com sucesso!');
+    }
+  };
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
@@ -66,7 +76,10 @@ export default function Clientes() {
             Gerencie todos os clientes do sistema
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
+        <Button 
+          className="bg-primary hover:bg-primary-dark"
+          onClick={() => navigate('/clientes/novo')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Novo Cliente
         </Button>
@@ -180,13 +193,26 @@ export default function Clientes() {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/clientes/${client.id}`)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/clientes/editar/${client.id}`)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(client.id, client.name)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
