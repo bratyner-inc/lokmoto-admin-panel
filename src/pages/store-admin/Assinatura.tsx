@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { PenTool, Crown, Zap, Shield, TrendingUp, Calendar, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
+import { CheckoutModal } from '@/components/checkout/CheckoutModal';
+import { useCheckout } from '@/hooks/useCheckout';
 
 // Mock data da assinatura atual
 const currentPlan = {
@@ -75,6 +77,25 @@ const availablePlans = [
 ];
 
 export default function Assinatura() {
+  const { 
+    isOpen, 
+    items, 
+    openSubscriptionCheckout, 
+    closeCheckout, 
+    handleSuccess, 
+    handleError 
+  } = useCheckout({
+    title: 'Assinatura LokMoto',
+    description: 'Escolha seu plano e finalize o pagamento',
+    onSuccess: (paymentData) => {
+      console.log('Pagamento da assinatura realizado:', paymentData);
+      // Aqui você pode atualizar o estado do plano do usuário
+    },
+    onError: (error) => {
+      console.error('Erro no pagamento da assinatura:', error);
+    }
+  });
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -285,6 +306,15 @@ export default function Assinatura() {
                     className="w-full" 
                     variant={currentPlan.type === plan.type ? "outline" : "default"}
                     disabled={currentPlan.type === plan.type}
+                    onClick={() => {
+                      if (currentPlan.type !== plan.type) {
+                        openSubscriptionCheckout(
+                          `Plano ${plan.name}`, 
+                          plan.price, 
+                          plan.description
+                        );
+                      }
+                    }}
                   >
                     {currentPlan.type === plan.type ? (
                       <>
@@ -362,6 +392,17 @@ export default function Assinatura() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isOpen}
+        onClose={closeCheckout}
+        items={items}
+        title="Assinatura LokMoto"
+        description="Escolha seu plano e finalize o pagamento"
+        onSuccess={handleSuccess}
+        onError={handleError}
+      />
     </div>
   );
 }
