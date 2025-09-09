@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Car, Plus, Search, Filter, Fuel, Calendar, MapPin, Edit, Eye, Wrench } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { Car, Plus, Search, Filter, Fuel, Calendar, MapPin, Edit, Eye, Wrench, Trash2 } from 'lucide-react';
 
 // Mock data
 const mockVehicles = [
@@ -55,6 +58,30 @@ const mockVehicles = [
 ];
 
 export default function Veiculos() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [vehicles] = useState(mockVehicles);
+
+  const handleDeleteVehicle = async (vehicleId: string) => {
+    try {
+      // Simular chamada API
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      toast({
+        title: "Veículo excluído",
+        description: "O veículo foi removido com sucesso.",
+      });
+      
+      // Em um app real, aqui você removeria o veículo da lista
+      console.log('Veículo excluído:', vehicleId);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o veículo.",
+        variant: "destructive",
+      });
+    }
+  };
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'available':
@@ -105,7 +132,10 @@ export default function Veiculos() {
             Gerencie a frota de veículos da loja
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
+        <Button 
+          className="bg-primary hover:bg-primary-dark"
+          onClick={() => navigate('/veiculos/novo')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Cadastrar Veículo
         </Button>
@@ -179,7 +209,7 @@ export default function Veiculos() {
 
       {/* Vehicles Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {mockVehicles.map((vehicle) => (
+        {vehicles.map((vehicle) => (
           <Card key={vehicle.id} className="shadow-card hover:shadow-elegant transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -239,24 +269,57 @@ export default function Veiculos() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-3 border-t">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => window.location.href = `/veiculos/${vehicle.id}`}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Edit className="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Wrench className="h-4 w-4 mr-1" />
-                    Manutenção
-                  </Button>
+                <div className="space-y-2 pt-3 border-t">
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => navigate(`/veiculos/${vehicle.id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => navigate(`/veiculos/${vehicle.id}/editar`)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Editar
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Wrench className="h-4 w-4 mr-1" />
+                      Manutenção
+                    </Button>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Excluir
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir o veículo {vehicle.model}? 
+                          Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleDeleteVehicle(vehicle.id)}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
@@ -271,7 +334,11 @@ export default function Veiculos() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-16 flex flex-col gap-1">
+            <Button 
+              variant="outline" 
+              className="h-16 flex flex-col gap-1"
+              onClick={() => navigate('/veiculos/novo')}
+            >
               <Plus className="h-5 w-5" />
               <span className="text-sm">Novo Veículo</span>
             </Button>

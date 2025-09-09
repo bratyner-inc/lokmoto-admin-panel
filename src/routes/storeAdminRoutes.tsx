@@ -11,7 +11,7 @@ const ContratoForm = lazy(() => import('@/pages/store-admin/ContratoForm'));
 const ContratoDetalhes = lazy(() => import('@/pages/store-admin/ContratoDetalhes'));
 const Veiculos = lazy(() => import('@/pages/store-admin/Veiculos'));
 const VeiculoDetalhes = lazy(() => import('@/pages/store-admin/VeiculoDetalhes'));
-const VeiculoEdicao = lazy(() => import('@/pages/store-admin/VeiculoEdicao'));
+const VeiculoForm = lazy(() => import('@/pages/store-admin/VeiculoForm'));
 const Propostas = lazy(() => import('@/pages/store-admin/Propostas'));
 const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
@@ -105,13 +105,24 @@ export const storeAdminRoutes: RouteObject[] = [
     ),
   },
   {
+    path: '/veiculos/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
+      >
+        <VeiculoForm mode="create" />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/veiculos/:id/editar',
     element: (
       <ProtectedRoute 
         requiredRole={UserRole.STORE_ADMIN}
         requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
       >
-        <VeiculoEdicao />
+        <VeiculoForm mode="edit" />
       </ProtectedRoute>
     ),
   },
