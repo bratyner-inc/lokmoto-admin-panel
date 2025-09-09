@@ -12,6 +12,9 @@ const ContratoDetalhes = lazy(() => import('@/pages/store-admin/ContratoDetalhes
 const Veiculos = lazy(() => import('@/pages/store-admin/Veiculos'));
 const VeiculoDetalhes = lazy(() => import('@/pages/store-admin/VeiculoDetalhes'));
 const VeiculoForm = lazy(() => import('@/pages/store-admin/VeiculoForm'));
+const Manutencao = lazy(() => import('@/pages/store-admin/Manutencao'));
+const ManutencaoForm = lazy(() => import('@/pages/store-admin/ManutencaoForm'));
+const ManutencaoDetalhes = lazy(() => import('@/pages/store-admin/ManutencaoDetalhes'));
 const Propostas = lazy(() => import('@/pages/store-admin/Propostas'));
 const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
@@ -123,6 +126,50 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
       >
         <VeiculoForm mode="edit" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/manutencao',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
+      >
+        <Manutencao />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/manutencao/nova',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
+      >
+        <ManutencaoForm mode="create" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/manutencao/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
+      >
+        <ManutencaoDetalhes />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/manutencao/:id/editar',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
+      >
+        <ManutencaoForm mode="edit" />
       </ProtectedRoute>
     ),
   },
