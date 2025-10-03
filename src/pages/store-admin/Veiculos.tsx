@@ -169,6 +169,17 @@ export default function Veiculos() {
             
             <CardContent>
               <div className="space-y-4">
+                {/* Daily Rate */}
+                <div className="bg-primary/10 rounded-lg p-3 text-center">
+                  <div className="text-sm text-muted-foreground">Valor da Diária</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {new Intl.NumberFormat('pt-BR', { 
+                      style: 'currency', 
+                      currency: 'BRL' 
+                    }).format(motorcycle.dailyRate)}
+                  </div>
+                </div>
+
                 {/* Vehicle Details */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>

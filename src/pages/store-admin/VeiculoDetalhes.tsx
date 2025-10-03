@@ -4,19 +4,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useMotorcycle } from '@/hooks/useMotorcycles';
+import { useMotorcycles, useMotorcycle } from '@/hooks/useMotorcycles';
 import { 
   Car, 
   ArrowLeft, 
   Edit, 
   Loader2,
-  MapPin
+  MapPin,
+  DollarSign,
+  Tag
 } from 'lucide-react';
 
 export default function VeiculoDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { motorcycle, isLoading, error } = useMotorcycle(id || '');
+  const { categories } = useMotorcycles();
+
+  const category = categories.find(cat => cat.id === motorcycle?.categoryId);
 
   if (isLoading) {
     return (
@@ -81,12 +86,26 @@ export default function VeiculoDetalhes() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               {getStatusBadge(motorcycle.isAvailable)}
               <p className="text-sm text-muted-foreground mt-2">Status Atual</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary flex items-center justify-center gap-1">
+                <DollarSign className="h-6 w-6" />
+                {new Intl.NumberFormat('pt-BR', { 
+                  style: 'currency', 
+                  currency: 'BRL' 
+                }).format(motorcycle.dailyRate)}
+              </div>
+              <p className="text-sm text-muted-foreground">Valor da Diária</p>
             </div>
           </CardContent>
         </Card>
@@ -142,6 +161,29 @@ export default function VeiculoDetalhes() {
               <div className="text-muted-foreground">Chassi</div>
               <div className="font-mono text-xs">{motorcycle.chassis}</div>
             </div>
+          </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <div className="text-muted-foreground">Valor da Diária</div>
+              <div className="font-bold text-primary text-lg">
+                {new Intl.NumberFormat('pt-BR', { 
+                  style: 'currency', 
+                  currency: 'BRL' 
+                }).format(motorcycle.dailyRate)}
+              </div>
+            </div>
+            {category && (
+              <div>
+                <div className="text-muted-foreground">Categoria</div>
+                <Badge variant="outline" className="mt-1">
+                  <Tag className="h-3 w-3 mr-1" />
+                  {category.name}
+                </Badge>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
