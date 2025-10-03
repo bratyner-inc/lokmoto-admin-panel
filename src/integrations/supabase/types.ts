@@ -1156,6 +1156,10 @@ export type Database = {
         Args: { "": number }
         Returns: string
       }
+      get_rental_company_id_for_motorcycle: {
+        Args: { _motorcycle_id: string }
+        Returns: string
+      }
       gettransactionid: {
         Args: Record<PropertyKey, never>
         Returns: unknown
@@ -1187,6 +1191,25 @@ export type Database = {
       gtrgm_out: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_customer: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_platform_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_rental_company: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       json: {
         Args: { "": unknown }
