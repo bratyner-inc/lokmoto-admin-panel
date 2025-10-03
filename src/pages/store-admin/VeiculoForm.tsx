@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { motorcycleFormSchema, type MotorcycleFormData } from '@/lib/validations/motorcycle';
+import { SupabaseMotorcycleRepository } from '@/data/repositories/SupabaseMotorcycleRepository';
 import { 
   Bike,
   ArrowLeft, 
@@ -44,10 +45,21 @@ export default function VeiculoForm() {
   const onSubmit = async (data: MotorcycleFormData) => {
     setIsLoading(true);
     try {
-      // TODO: Integrar com o Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Dados da motocicleta:', data);
+      const repository = new SupabaseMotorcycleRepository();
+      await repository.create({
+        rentalCompanyId: '', // Será preenchido automaticamente no repositório
+        brand: data.brand,
+        model: data.model,
+        version: data.version,
+        year: data.year,
+        plate: data.plate,
+        renavam: data.renavam,
+        chassis: data.chassis,
+        color: data.color,
+        engineCapacity: data.engineCapacity,
+        categoryId: data.categoryId || undefined,
+        isAvailable: data.isAvailable,
+      });
       
       toast({
         title: "Motocicleta cadastrada",
@@ -56,9 +68,10 @@ export default function VeiculoForm() {
       
       navigate('/veiculos');
     } catch (error) {
+      console.error('Erro ao cadastrar motocicleta:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível cadastrar a motocicleta.",
+        description: error instanceof Error ? error.message : "Não foi possível cadastrar a motocicleta.",
         variant: "destructive",
       });
     } finally {
