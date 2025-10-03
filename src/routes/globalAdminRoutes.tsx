@@ -1,7 +1,6 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { UserRole, PERMISSIONS } from '@/types';
 
 // Lazy loading das páginas do Admin Global
 const Clientes = lazy(() => import('@/pages/global-admin/Clientes'));
@@ -17,10 +16,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/clientes',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
-      >
+      <ProtectedRoute>
         <Clientes />
       </ProtectedRoute>
     ),
@@ -28,10 +24,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/clientes/novo',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
-      >
+      <ProtectedRoute>
         <ClienteForm />
       </ProtectedRoute>
     ),
@@ -39,10 +32,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/clientes/editar/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
-      >
+      <ProtectedRoute>
         <ClienteForm />
       </ProtectedRoute>
     ),
@@ -50,10 +40,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/clientes/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
-      >
+      <ProtectedRoute>
         <ClienteDetalhes />
       </ProtectedRoute>
     ),
@@ -61,10 +48,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/usuarios',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_USERS}
-      >
+      <ProtectedRoute>
         <Usuarios />
       </ProtectedRoute>
     ),
@@ -72,10 +56,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/usuarios/novo',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_USERS}
-      >
+      <ProtectedRoute>
         <UsuarioForm />
       </ProtectedRoute>
     ),
@@ -83,10 +64,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/usuarios/editar/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_USERS}
-      >
+      <ProtectedRoute>
         <UsuarioForm />
       </ProtectedRoute>
     ),
@@ -94,10 +72,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/financeiro',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_FINANCIAL}
-      >
+      <ProtectedRoute>
         <Financeiro />
       </ProtectedRoute>
     ),
@@ -105,10 +80,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/banners',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_BANNERS}
-      >
+      <ProtectedRoute>
         <Banners />
       </ProtectedRoute>
     ),
@@ -116,10 +88,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/banners/novo',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_BANNERS}
-      >
+      <ProtectedRoute>
         <BannerForm />
       </ProtectedRoute>
     ),
@@ -127,10 +96,7 @@ export const globalAdminRoutes: RouteObject[] = [
   {
     path: '/banners/editar/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_BANNERS}
-      >
+      <ProtectedRoute>
         <BannerForm />
       </ProtectedRoute>
     ),

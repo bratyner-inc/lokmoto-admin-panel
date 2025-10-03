@@ -1,7 +1,6 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { UserRole, PERMISSIONS } from '@/types';
 
 // Lazy loading das páginas do Admin de Loja
 const ClientesLoja = lazy(() => import('@/pages/store-admin/ClientesLoja'));
@@ -12,6 +11,7 @@ const ContratoDetalhes = lazy(() => import('@/pages/store-admin/ContratoDetalhes
 const Veiculos = lazy(() => import('@/pages/store-admin/Veiculos'));
 const VeiculoDetalhes = lazy(() => import('@/pages/store-admin/VeiculoDetalhes'));
 const VeiculoForm = lazy(() => import('@/pages/store-admin/VeiculoForm'));
+const VeiculoEdicao = lazy(() => import('@/pages/store-admin/VeiculoEdicao'));
 const Manutencao = lazy(() => import('@/pages/store-admin/Manutencao'));
 const ManutencaoForm = lazy(() => import('@/pages/store-admin/ManutencaoForm'));
 const ManutencaoDetalhes = lazy(() => import('@/pages/store-admin/ManutencaoDetalhes'));
@@ -20,12 +20,9 @@ const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
 export const storeAdminRoutes: RouteObject[] = [
   {
-    path: '/clientes',
+    path: '/clientes-loja',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.VIEW_CLIENTS}
-      >
+      <ProtectedRoute>
         <ClientesLoja />
       </ProtectedRoute>
     ),
@@ -33,10 +30,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/pagamentos',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_PAYMENTS}
-      >
+      <ProtectedRoute>
         <Pagamentos />
       </ProtectedRoute>
     ),
@@ -44,10 +38,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/contratos',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
-      >
+      <ProtectedRoute>
         <Contratos />
       </ProtectedRoute>
     ),
@@ -55,10 +46,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/contratos/novo',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
-      >
+      <ProtectedRoute>
         <ContratoForm />
       </ProtectedRoute>
     ),
@@ -66,10 +54,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/contratos/editar/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
-      >
+      <ProtectedRoute>
         <ContratoForm />
       </ProtectedRoute>
     ),
@@ -77,10 +62,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/contratos/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_CONTRACTS}
-      >
+      <ProtectedRoute>
         <ContratoDetalhes />
       </ProtectedRoute>
     ),
@@ -88,10 +70,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/veiculos',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
+      <ProtectedRoute>
         <Veiculos />
       </ProtectedRoute>
     ),
@@ -99,10 +78,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/veiculos/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
+      <ProtectedRoute>
         <VeiculoDetalhes />
       </ProtectedRoute>
     ),
@@ -110,32 +86,23 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/veiculos/novo',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
-        <VeiculoForm mode="create" />
+      <ProtectedRoute>
+        <VeiculoForm />
       </ProtectedRoute>
     ),
   },
   {
     path: '/veiculos/:id/editar',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
-        <VeiculoForm mode="edit" />
+      <ProtectedRoute>
+        <VeiculoEdicao />
       </ProtectedRoute>
     ),
   },
   {
     path: '/manutencao',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
+      <ProtectedRoute>
         <Manutencao />
       </ProtectedRoute>
     ),
@@ -143,21 +110,15 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/manutencao/nova',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
-        <ManutencaoForm mode="create" />
+      <ProtectedRoute>
+        <ManutencaoForm />
       </ProtectedRoute>
     ),
   },
   {
     path: '/manutencao/:id',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
+      <ProtectedRoute>
         <ManutencaoDetalhes />
       </ProtectedRoute>
     ),
@@ -165,21 +126,15 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/manutencao/:id/editar',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
-      >
-        <ManutencaoForm mode="edit" />
+      <ProtectedRoute>
+        <ManutencaoForm />
       </ProtectedRoute>
     ),
   },
   {
     path: '/propostas',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_PROPOSALS}
-      >
+      <ProtectedRoute>
         <Propostas />
       </ProtectedRoute>
     ),
@@ -187,10 +142,7 @@ export const storeAdminRoutes: RouteObject[] = [
   {
     path: '/assinatura',
     element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.STORE_ADMIN}
-        requiredPermission={PERMISSIONS.MANAGE_SUBSCRIPTION}
-      >
+      <ProtectedRoute>
         <Assinatura />
       </ProtectedRoute>
     ),
