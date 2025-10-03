@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useAuthV2 } from '@/hooks/useAuthV2';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Users, 
@@ -16,9 +16,9 @@ import {
   UserCog,
   Image,
   CreditCard,
-  ClipboardList
+  ClipboardList,
+  Bike
 } from 'lucide-react';
-import { UserRole } from '@/types';
 
 // Mock data para o dashboard
 const mockGlobalStats = {
@@ -51,9 +51,10 @@ const mockStoreStats = {
 };
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, isPlatformAdmin, isRentalCompany } = useAuthV2();
   
-  const stats = user?.role === UserRole.GLOBAL_ADMIN ? mockGlobalStats : mockStoreStats;
+  const stats = isPlatformAdmin ? mockGlobalStats : mockStoreStats;
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -88,7 +89,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground">
-          Bem-vindo de volta, {user?.name}! Aqui está um resumo da sua {user?.role === UserRole.GLOBAL_ADMIN ? 'administração global' : 'loja'}.
+          Bem-vindo de volta! Aqui está um resumo da sua {isPlatformAdmin ? 'administração global' : 'loja'}.
         </p>
       </div>
 
@@ -230,58 +231,74 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {user?.role === UserRole.GLOBAL_ADMIN ? (
+            {isPlatformAdmin ? (
               <>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/usuarios">
-                    <UserCog className="h-6 w-6" />
-                    <span className="text-sm">Novo Usuário</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2" 
+                  onClick={() => navigate('/usuarios')}
+                >
+                  <UserCog className="h-6 w-6" />
+                  <span className="text-sm">Novo Usuário</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/clientes">
-                    <Users className="h-6 w-6" />
-                    <span className="text-sm">Ver Clientes</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/clientes')}
+                >
+                  <Users className="h-6 w-6" />
+                  <span className="text-sm">Ver Clientes</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/financeiro">
-                    <DollarSign className="h-6 w-6" />
-                    <span className="text-sm">Financeiro</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/financeiro')}
+                >
+                  <DollarSign className="h-6 w-6" />
+                  <span className="text-sm">Financeiro</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/banners">
-                    <Image className="h-6 w-6" />
-                    <span className="text-sm">Banners</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/banners')}
+                >
+                  <Image className="h-6 w-6" />
+                  <span className="text-sm">Banners</span>
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/contratos">
-                    <FileText className="h-6 w-6" />
-                    <span className="text-sm">Novo Contrato</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/contratos/novo')}
+                >
+                  <FileText className="h-6 w-6" />
+                  <span className="text-sm">Novo Contrato</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/veiculos">
-                    <Car className="h-6 w-6" />
-                    <span className="text-sm">Ver Veículos</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/veiculos')}
+                >
+                  <Bike className="h-6 w-6" />
+                  <span className="text-sm">Ver Veículos</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/pagamentos">
-                    <CreditCard className="h-6 w-6" />
-                    <span className="text-sm">Pagamentos</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/pagamentos')}
+                >
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-sm">Pagamentos</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-                  <a href="/propostas">
-                    <ClipboardList className="h-6 w-6" />
-                    <span className="text-sm">Propostas</span>
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2"
+                  onClick={() => navigate('/propostas')}
+                >
+                  <ClipboardList className="h-6 w-6" />
+                  <span className="text-sm">Propostas</span>
                 </Button>
               </>
             )}
