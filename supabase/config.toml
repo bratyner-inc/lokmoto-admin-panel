@@ -1,1 +1,6 @@
 project_id = "mwaoarsrcveakrunozhj"
+
+# Safe2Pay Webhook - Uses custom signature verification instead of JWT
+# Requires SAFE2PAY_WEBHOOK_SECRET environment variable to be set
+[functions.safe2pay-webhook]
+verify_jwt = false
