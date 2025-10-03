@@ -24,6 +24,7 @@ export function useMotorcycles() {
       repository.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['motorcycles'] });
+      queryClient.invalidateQueries({ queryKey: ['motorcycle'] });
     },
   });
 
@@ -34,6 +35,32 @@ export function useMotorcycles() {
     deleteMotorcycle: deleteMutation.mutateAsync,
     updateMotorcycle: updateMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
+    isUpdating: updateMutation.isPending,
+  };
+}
+
+export function useMotorcycle(id: string) {
+  const queryClient = useQueryClient();
+
+  const { data: motorcycle, isLoading, error } = useQuery({
+    queryKey: ['motorcycle', id],
+    queryFn: () => repository.getById(id),
+    enabled: !!id,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: Partial<Motorcycle>) => repository.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['motorcycle', id] });
+      queryClient.invalidateQueries({ queryKey: ['motorcycles'] });
+    },
+  });
+
+  return {
+    motorcycle,
+    isLoading,
+    error,
+    updateMotorcycle: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
   };
 }
