@@ -7,18 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ArrowLeft, Save, User, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Building2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useCustomer, useCreateCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
+import { useRentalCompany, useCreateRentalCompany, useUpdateRentalCompany } from '@/hooks/useRentalCompanies';
+import { RentalCompany } from '@/domain/entities/RentalCompany';
 
-const clientFormSchema = z.object({
-  fullName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+const companyFormSchema = z.object({
+  companyName: z.string().min(3, 'Nome fantasia deve ter no mínimo 3 caracteres'),
+  tradingName: z.string().min(3, 'Razão social deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
   phone: z.string().min(10, 'Telefone inválido'),
-  documentId: z.string().min(11, 'CPF inválido'),
+  cnpj: z.string().min(14, 'CNPJ inválido'),
+  subscriptionStatus: z.enum(['active', 'inactive', 'pending', 'canceled']),
 });
 
-type ClientFormData = z.infer<typeof clientFormSchema>;
+type CompanyFormData = z.infer<typeof companyFormSchema>;
 
 // Funções de formatação
 const formatPhone = (value: string) => {
@@ -29,12 +32,13 @@ const formatPhone = (value: string) => {
     .replace(/(-\d{4})\d+?$/, '$1');
 };
 
-const formatCPF = (value: string) => {
+const formatCNPJ = (value: string) => {
   return value
     .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})/, '$1-$2')
     .replace(/(-\d{2})\d+?$/, '$1');
 };
 
@@ -44,69 +48,82 @@ export default function ClienteForm() {
   const { toast } = useToast();
   const isEdit = Boolean(id);
 
-  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(id || '');
-  const createMutation = useCreateCustomer();
-  const updateMutation = useUpdateCustomer();
+  const { data: company, isLoading: isLoadingCompany } = useRentalCompany(id || '');
+  const createMutation = useCreateRentalCompany();
+  const updateMutation = useUpdateRentalCompany();
 
-  const form = useForm<ClientFormData>({
-    resolver: zodResolver(clientFormSchema),
-    defaultValues: isEdit && customer ? {
-      fullName: customer.fullName,
-      email: customer.email,
-      phone: customer.phone,
-      documentId: customer.documentId,
+  const form = useForm<CompanyFormData>({
+    resolver: zodResolver(companyFormSchema),
+    defaultValues: isEdit && company ? {
+      companyName: company.companyName,
+      tradingName: company.tradingName,
+      email: company.email,
+      phone: company.phone,
+      cnpj: company.cnpj,
+      subscriptionStatus: company.subscriptionStatus,
     } : {
-      fullName: '',
+      companyName: '',
+      tradingName: '',
       email: '',
       phone: '',
-      documentId: '',
+      cnpj: '',
+      subscriptionStatus: 'pending',
     },
   });
 
   React.useEffect(() => {
-    if (customer && isEdit) {
+    if (company && isEdit) {
       form.reset({
-        fullName: customer.fullName,
-        email: customer.email,
-        phone: customer.phone,
-        documentId: customer.documentId,
+        companyName: company.companyName,
+        tradingName: company.tradingName,
+        email: company.email,
+        phone: company.phone,
+        cnpj: company.cnpj,
+        subscriptionStatus: company.subscriptionStatus,
       });
     }
-  }, [customer, isEdit, form]);
+  }, [company, isEdit, form]);
 
-  const onSubmit = async (data: ClientFormData) => {
+  const onSubmit = async (data: CompanyFormData) => {
     try {
       if (isEdit && id) {
-        await updateMutation.mutateAsync({ id, data });
+        await updateMutation.mutateAsync({ 
+          id, 
+          data: data as Partial<RentalCompany>
+        });
         toast({
-          title: "Cliente atualizado",
-          description: "As informações do cliente foram atualizadas com sucesso.",
+          title: "Locadora atualizada",
+          description: "As informações da locadora foram atualizadas com sucesso.",
         });
       } else {
         await createMutation.mutateAsync({
           id: crypto.randomUUID(),
-          fullName: data.fullName,
+          companyName: data.companyName,
+          tradingName: data.tradingName,
           email: data.email,
           phone: data.phone,
-          documentId: data.documentId,
-        });
+          cnpj: data.cnpj,
+          subscriptionStatus: data.subscriptionStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as RentalCompany);
         toast({
-          title: "Cliente criado",
-          description: "O novo cliente foi cadastrado com sucesso.",
+          title: "Locadora criada",
+          description: "A nova locadora foi cadastrada com sucesso.",
         });
       }
       
-      navigate('/clientes');
+      navigate('/admin/clientes');
     } catch (error) {
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao salvar o cliente.",
+        description: "Ocorreu um erro ao salvar a locadora.",
         variant: "destructive",
       });
     }
   };
 
-  if (isEdit && isLoadingCustomer) {
+  if (isEdit && isLoadingCompany) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -114,11 +131,11 @@ export default function ClienteForm() {
     );
   }
 
-  if (isEdit && !customer) {
+  if (isEdit && !company) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <p className="text-lg text-muted-foreground">Cliente não encontrado</p>
-        <Button onClick={() => navigate('/clientes')}>
+        <p className="text-lg text-muted-foreground">Locadora não encontrada</p>
+        <Button onClick={() => navigate('/admin/clientes')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar para lista
         </Button>
@@ -132,42 +149,56 @@ export default function ClienteForm() {
       <div className="flex items-center gap-4">
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/clientes')}
+          onClick={() => navigate('/admin/clientes')}
           className="p-2"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <User className="h-8 w-8 text-primary" />
-            {isEdit ? 'Editar Cliente' : 'Novo Cliente'}
+            <Building2 className="h-8 w-8 text-primary" />
+            {isEdit ? 'Editar Locadora' : 'Nova Locadora'}
           </h1>
           <p className="text-muted-foreground">
-            {isEdit ? 'Atualize as informações do cliente' : 'Preencha os dados do novo cliente'}
+            {isEdit ? 'Atualize as informações da locadora' : 'Preencha os dados da nova locadora'}
           </p>
         </div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Dados do Cliente */}
+          {/* Dados da Empresa */}
           <Card>
             <CardHeader>
-              <CardTitle>Dados do Cliente</CardTitle>
+              <CardTitle>Dados da Empresa</CardTitle>
               <CardDescription>
-                Informações básicas do cliente
+                Informações básicas da locadora
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="fullName"
+                  name="companyName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
+                      <FormLabel>Nome Fantasia</FormLabel>
                       <FormControl>
-                        <Input placeholder="Digite o nome completo" {...field} />
+                        <Input placeholder="Moto Rent" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tradingName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Razão Social</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Moto Rent Locações LTDA" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -181,7 +212,7 @@ export default function ClienteForm() {
                     <FormItem>
                       <FormLabel>E-mail</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="cliente@email.com" {...field} />
+                        <Input type="email" placeholder="contato@motorent.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -209,17 +240,39 @@ export default function ClienteForm() {
 
                 <FormField
                   control={form.control}
-                  name="documentId"
+                  name="cnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF</FormLabel>
+                      <FormLabel>CNPJ</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="000.000.000-00" 
+                          placeholder="00.000.000/0000-00" 
                           {...field}
-                          onChange={(e) => field.onChange(formatCPF(e.target.value))}
-                          maxLength={14}
+                          onChange={(e) => field.onChange(formatCNPJ(e.target.value))}
+                          maxLength={18}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="subscriptionStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status da Assinatura</FormLabel>
+                      <FormControl>
+                        <select 
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          {...field}
+                        >
+                          <option value="pending">Pendente</option>
+                          <option value="active">Ativo</option>
+                          <option value="inactive">Inativo</option>
+                          <option value="canceled">Cancelado</option>
+                        </select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -234,7 +287,7 @@ export default function ClienteForm() {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => navigate('/clientes')}
+              onClick={() => navigate('/admin/clientes')}
             >
               Cancelar
             </Button>
@@ -251,7 +304,7 @@ export default function ClienteForm() {
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  {isEdit ? 'Atualizar Cliente' : 'Criar Cliente'}
+                  {isEdit ? 'Atualizar Locadora' : 'Criar Locadora'}
                 </>
               )}
             </Button>

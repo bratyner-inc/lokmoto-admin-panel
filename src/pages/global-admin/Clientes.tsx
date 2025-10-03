@@ -6,41 +6,40 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Search, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useCustomers, useDeleteCustomer } from '@/hooks/useCustomers';
+import { useRentalCompanies, useDeleteRentalCompany } from '@/hooks/useRentalCompanies';
 
 export default function Clientes() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   
-  const { data: customers = [], isLoading } = useCustomers();
-  const deleteMutation = useDeleteCustomer();
+  const { data: rentalCompanies = [], isLoading } = useRentalCompanies();
+  const deleteMutation = useDeleteRentalCompany();
 
-  console.log(customers)
-
-  const handleDelete = async (customerId: string, customerName: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir o cliente ${customerName}?`)) {
+  const handleDelete = async (companyId: string, companyName: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir a locadora ${companyName}?`)) {
       try {
-        await deleteMutation.mutateAsync(customerId);
+        await deleteMutation.mutateAsync(companyId);
         toast({
-          title: "Cliente excluído",
-          description: "O cliente foi removido com sucesso.",
+          title: "Locadora excluída",
+          description: "A locadora foi removida com sucesso.",
         });
       } catch (error) {
         toast({
           title: "Erro ao excluir",
-          description: "Não foi possível excluir o cliente.",
+          description: "Não foi possível excluir a locadora.",
           variant: "destructive",
         });
       }
     }
   };
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.documentId.includes(searchTerm) ||
-    customer.phone.includes(searchTerm)
+  const filteredCompanies = rentalCompanies.filter(company =>
+    company.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.tradingName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.cnpj.includes(searchTerm) ||
+    company.phone.includes(searchTerm)
   );
 
   if (isLoading) {
@@ -58,18 +57,18 @@ export default function Clientes() {
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Users className="h-8 w-8 text-primary" />
-            Clientes
+            Locadoras
           </h1>
           <p className="text-muted-foreground">
-            Gerencie todos os clientes do sistema
+            Gerencie todas as locadoras do sistema
           </p>
         </div>
         <Button 
           className="bg-primary hover:bg-primary-dark"
-          onClick={() => navigate('/clientes/novo')}
+          onClick={() => navigate('/admin/clientes/novo')}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Novo Cliente
+          Nova Locadora
         </Button>
       </div>
 
@@ -84,7 +83,7 @@ export default function Clientes() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input 
-                  placeholder="Buscar por nome, e-mail, CPF ou telefone..." 
+                  placeholder="Buscar por nome, e-mail, CNPJ ou telefone..." 
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -100,43 +99,43 @@ export default function Clientes() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{customers.length}</div>
-              <p className="text-sm text-muted-foreground">Total de Clientes</p>
+              <div className="text-2xl font-bold text-primary">{rentalCompanies.length}</div>
+              <p className="text-sm text-muted-foreground">Total de Locadoras</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{filteredCustomers.length}</div>
+              <div className="text-2xl font-bold text-primary">{filteredCompanies.length}</div>
               <p className="text-sm text-muted-foreground">Resultados da Busca</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Clients Table */}
+      {/* Companies Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Clientes</CardTitle>
+          <CardTitle>Lista de Locadoras</CardTitle>
           <CardDescription>
-            Todos os clientes cadastrados no sistema
+            Todas as locadoras cadastradas no sistema
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredCustomers.length === 0 ? (
+          {filteredCompanies.length === 0 ? (
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg text-muted-foreground">
-                {searchTerm ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+                {searchTerm ? 'Nenhuma locadora encontrada' : 'Nenhuma locadora cadastrada'}
               </p>
               {!searchTerm && (
                 <Button 
                   className="mt-4"
-                  onClick={() => navigate('/clientes/novo')}
+                  onClick={() => navigate('/admin/clientes/novo')}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Primeiro Cliente
+                  Adicionar Primeira Locadora
                 </Button>
               )}
             </div>
@@ -145,39 +144,47 @@ export default function Clientes() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Nome</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Nome Fantasia</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Razão Social</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">E-mail</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Telefone</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">CPF</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Cadastro</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">CNPJ</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCustomers.map((customer) => (
-                    <tr key={customer.id} className="border-b hover:bg-muted/30 transition-colors">
+                  {filteredCompanies.map((company) => (
+                    <tr key={company.id} className="border-b hover:bg-muted/30 transition-colors">
                       <td className="py-4 px-4">
-                        <div className="font-medium text-foreground">{customer.fullName}</div>
+                        <div className="font-medium text-foreground">{company.companyName}</div>
                       </td>
-                      <td className="py-4 px-4 text-foreground">{customer.email}</td>
-                      <td className="py-4 px-4 text-foreground">{customer.phone}</td>
-                      <td className="py-4 px-4 text-foreground font-mono">{customer.documentId}</td>
-                      <td className="py-4 px-4 text-foreground">
-                        {new Date(customer.createdAt).toLocaleDateString('pt-BR')}
+                      <td className="py-4 px-4 text-foreground">{company.tradingName}</td>
+                      <td className="py-4 px-4 text-foreground">{company.email}</td>
+                      <td className="py-4 px-4 text-foreground font-mono">{company.cnpj}</td>
+                      <td className="py-4 px-4">
+                        <Badge variant={
+                          company.subscriptionStatus === 'active' ? 'default' :
+                          company.subscriptionStatus === 'pending' ? 'secondary' :
+                          'destructive'
+                        }>
+                          {company.subscriptionStatus === 'active' ? 'Ativo' :
+                           company.subscriptionStatus === 'pending' ? 'Pendente' :
+                           company.subscriptionStatus === 'canceled' ? 'Cancelado' : 'Inativo'}
+                        </Badge>
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => navigate(`/clientes/${customer.id}`)}
+                            onClick={() => navigate(`/admin/clientes/${company.id}`)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => navigate(`/clientes/${customer.id}/editar`)}
+                            onClick={() => navigate(`/admin/clientes/${company.id}/editar`)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -185,7 +192,7 @@ export default function Clientes() {
                             variant="ghost" 
                             size="sm" 
                             className="text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(customer.id, customer.fullName)}
+                            onClick={() => handleDelete(company.id, company.companyName)}
                             disabled={deleteMutation.isPending}
                           >
                             <Trash2 className="h-4 w-4" />

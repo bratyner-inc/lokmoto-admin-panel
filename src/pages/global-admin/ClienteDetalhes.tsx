@@ -4,22 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { useCustomer } from '@/hooks/useCustomers';
+import { useRentalCompany } from '@/hooks/useRentalCompanies';
 import { 
   ArrowLeft, 
   Edit, 
-  User, 
+  Building2, 
   Phone, 
   Mail, 
   Calendar,
-  CreditCard,
+  FileText,
   Loader2
 } from 'lucide-react';
 
 export default function ClienteDetalhes() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { data: customer, isLoading, error } = useCustomer(id || '');
+  const { data: company, isLoading, error } = useRentalCompany(id || '');
 
   if (isLoading) {
     return (
@@ -29,12 +29,12 @@ export default function ClienteDetalhes() {
     );
   }
 
-  if (error || !customer) {
+  if (error || !company) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <User className="h-12 w-12 text-muted-foreground" />
-        <p className="text-lg text-muted-foreground">Cliente não encontrado</p>
-        <Button onClick={() => navigate('/clientes')}>
+        <Building2 className="h-12 w-12 text-muted-foreground" />
+        <p className="text-lg text-muted-foreground">Locadora não encontrada</p>
+        <Button onClick={() => navigate('/admin/clientes')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar para lista
         </Button>
@@ -49,48 +49,64 @@ export default function ClienteDetalhes() {
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/clientes')}
+            onClick={() => navigate('/admin/clientes')}
             className="p-2"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <User className="h-8 w-8 text-primary" />
-              {customer.fullName}
+              <Building2 className="h-8 w-8 text-primary" />
+              {company.companyName}
             </h1>
             <p className="text-muted-foreground">
-              Cliente desde {new Date(customer.createdAt).toLocaleDateString('pt-BR')}
+              Cliente desde {new Date(company.createdAt).toLocaleDateString('pt-BR')}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Badge variant="default" className="bg-success text-white">Cliente Ativo</Badge>
+          <Badge variant={
+            company.subscriptionStatus === 'active' ? 'default' :
+            company.subscriptionStatus === 'pending' ? 'secondary' :
+            'destructive'
+          }>
+            {company.subscriptionStatus === 'active' ? 'Ativo' :
+             company.subscriptionStatus === 'pending' ? 'Pendente' :
+             company.subscriptionStatus === 'canceled' ? 'Cancelado' : 'Inativo'}
+          </Badge>
           <Button 
-            onClick={() => navigate(`/clientes/${customer.id}/editar`)}
+            onClick={() => navigate(`/admin/clientes/${company.id}/editar`)}
             className="bg-primary hover:bg-primary-dark"
           >
             <Edit className="h-4 w-4 mr-2" />
-            Editar Cliente
+            Editar Locadora
           </Button>
         </div>
       </div>
 
-      {/* Client Details */}
+      {/* Company Details */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Informações do Cliente
+            <Building2 className="h-5 w-5" />
+            Informações da Empresa
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Nome Completo</Label>
-                <p className="font-medium">{customer.fullName}</p>
+                <Label className="text-sm font-medium text-muted-foreground">Nome Fantasia</Label>
+                <p className="font-medium">{company.companyName}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">Razão Social</Label>
+                <p>{company.tradingName}</p>
               </div>
             </div>
 
@@ -98,7 +114,7 @@ export default function ClienteDetalhes() {
               <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">E-mail</Label>
-                <p>{customer.email}</p>
+                <p>{company.email}</p>
               </div>
             </div>
 
@@ -106,23 +122,43 @@ export default function ClienteDetalhes() {
               <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Telefone</Label>
-                <p>{customer.phone}</p>
+                <p>{company.phone}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CreditCard className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">CPF</Label>
-                <p className="font-mono">{customer.documentId}</p>
+                <Label className="text-sm font-medium text-muted-foreground">CNPJ</Label>
+                <p className="font-mono">{company.cnpj}</p>
               </div>
             </div>
+
+            {company.subscriptionPlan && (
+              <div className="flex items-start gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Plano de Assinatura</Label>
+                  <p>{company.subscriptionPlan}</p>
+                </div>
+              </div>
+            )}
+
+            {company.subscriptionExpiration && (
+              <div className="flex items-start gap-3">
+                <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Vencimento da Assinatura</Label>
+                  <p>{new Date(company.subscriptionExpiration).toLocaleDateString('pt-BR')}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Cadastrado em</Label>
-                <p>{new Date(customer.createdAt).toLocaleDateString('pt-BR')}</p>
+                <p>{new Date(company.createdAt).toLocaleDateString('pt-BR')}</p>
               </div>
             </div>
 
@@ -130,7 +166,7 @@ export default function ClienteDetalhes() {
               <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Última Atualização</Label>
-                <p>{new Date(customer.updatedAt).toLocaleDateString('pt-BR')}</p>
+                <p>{new Date(company.updatedAt).toLocaleDateString('pt-BR')}</p>
               </div>
             </div>
           </div>
