@@ -43,9 +43,14 @@ export class SupabaseMotorcycleRepository implements IMotorcycleRepository {
   }
   
   async create(motorcycle: Omit<Motorcycle, 'id' | 'createdAt' | 'updatedAt'>): Promise<Motorcycle> {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
     
     const insertData = {
+      rental_company_id: user.id,
       brand: motorcycle.brand,
       model: motorcycle.model,
       version: motorcycle.version,
