@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,20 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Upload, X, Eye } from 'lucide-react';
+import { ArrowLeft, Upload, X, Eye, Loader2, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useBanner, useCreateBanner, useUpdateBanner, uploadBannerImage, deleteBannerImage } from '@/hooks/useBanners';
+import { Banner } from '@/domain/entities/Banner';
 
 const bannerSchema = z.object({
   title: z.string().min(3, 'Título deve ter pelo menos 3 caracteres'),
   description: z.string().optional(),
-  imageUrl: z.string().url('URL da imagem inválida'),
-  linkUrl: z.string().url('URL do link inválida').optional().or(z.literal('')),
-  position: z.enum(['hero', 'sidebar', 'footer']),
+  image: z.string().min(1, 'Imagem é obrigatória'),
+  url: z.string().url('URL do link inválida').optional().or(z.literal('')),
+  type: z.enum(['hero', 'sidebar_horizontal', 'sidebar_vertical']),
   isActive: z.boolean(),
   startDate: z.string().optional().or(z.literal('')),
   endDate: z.string().optional().or(z.literal('')),
@@ -28,103 +29,176 @@ const bannerSchema = z.object({
 
 type BannerFormData = z.infer<typeof bannerSchema>;
 
-// Mock data
-const mockBanner = {
-  id: '1',
-  title: 'Promoção de Verão 2024',
-  description: 'Desconto especial para contratos de longa duração',
-  imageUrl: 'https://via.placeholder.com/800x400/dc2626/ffffff?text=Banner+Preview',
-  linkUrl: 'https://lokmoto.com/promocao',
-  position: 'hero' as const,
-  isActive: true,
-  startDate: '2024-01-01',
-  endDate: '2024-03-31',
-};
-
 export default function BannerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const isEditing = Boolean(id);
+
+  const { data: banner, isLoading: isLoadingBanner } = useBanner(id || '');
+  const createMutation = useCreateBanner();
+  const updateMutation = useUpdateBanner();
 
   const form = useForm<BannerFormData>({
     resolver: zodResolver(bannerSchema),
     defaultValues: {
       title: '',
       description: '',
-      imageUrl: '',
-      linkUrl: '',
-      position: 'hero',
+      image: '',
+      url: '',
+      type: 'hero',
       isActive: true,
       startDate: '',
       endDate: '',
     },
   });
 
-  // Simulate loading banner data for editing
   useEffect(() => {
-    if (isEditing) {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        form.reset({
-          title: mockBanner.title,
-          description: mockBanner.description,
-          imageUrl: mockBanner.imageUrl,
-          linkUrl: mockBanner.linkUrl,
-          position: mockBanner.position,
-          isActive: mockBanner.isActive,
-          startDate: mockBanner.startDate,
-          endDate: mockBanner.endDate,
-        });
-        setImagePreview(mockBanner.imageUrl);
-      }, 500);
+    if (isEditing && banner) {
+      form.reset({
+        title: banner.title,
+        description: banner.description || '',
+        image: banner.image || '',
+        url: banner.url || '',
+        type: banner.type,
+        isActive: banner.isActive,
+        startDate: banner.startDate ? banner.startDate.toISOString().split('T')[0] : '',
+        endDate: banner.endDate ? banner.endDate.toISOString().split('T')[0] : '',
+      });
+      setImagePreview(banner.image || '');
     }
-  }, [isEditing, form]);
+  }, [isEditing, banner, form]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, selecione um arquivo de imagem válido.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: 'Erro',
+        description: 'A imagem deve ter no máximo 2MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const imageUrl = await uploadBannerImage(file);
+      form.setValue('image', imageUrl);
+      setImagePreview(imageUrl);
+      setUploadedFile(file);
+      toast({
+        title: 'Sucesso',
+        description: 'Imagem enviada com sucesso!',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Falha ao enviar a imagem.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    const currentImage = form.getValues('image');
+    if (currentImage) {
+      try {
+        await deleteBannerImage(currentImage);
+      } catch (error) {
+        console.error('Error deleting image:', error);
+      }
+    }
+    form.setValue('image', '');
+    setImagePreview('');
+    setUploadedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const onSubmit = async (data: BannerFormData) => {
-    setIsLoading(true);
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const bannerData: Partial<Banner> = {
+        title: data.title,
+        description: data.description,
+        image: data.image,
+        url: data.url || undefined,
+        type: data.type,
+        isActive: data.isActive,
+        startDate: data.startDate ? new Date(data.startDate) : new Date(),
+        endDate: data.endDate ? new Date(data.endDate) : undefined,
+      };
+
+      if (isEditing && id) {
+        await updateMutation.mutateAsync({ id, data: bannerData });
+        toast({
+          title: 'Banner atualizado!',
+          description: `Banner "${data.title}" foi atualizado com sucesso.`,
+        });
+      } else {
+        await createMutation.mutateAsync({
+          ...bannerData,
+          id: crypto.randomUUID(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as Banner);
+        toast({
+          title: 'Banner criado!',
+          description: `Banner "${data.title}" foi criado com sucesso.`,
+        });
+      }
       
-      toast({
-        title: isEditing ? 'Banner atualizado!' : 'Banner criado!',
-        description: `Banner "${data.title}" foi ${isEditing ? 'atualizado' : 'criado'} com sucesso.`,
-      });
-      
-      navigate('/banners');
+      navigate('/admin/banners');
     } catch (error) {
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro ao salvar o banner.',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const handleImageUrlChange = (url: string) => {
-    form.setValue('imageUrl', url);
-    setImagePreview(url);
-  };
-
-  const getPositionLabel = (position: string) => {
-    switch (position) {
+  const getTypeLabel = (type: string) => {
+    switch (type) {
       case 'hero':
         return 'Hero (Principal)';
-      case 'sidebar':
-        return 'Sidebar (Lateral)';
-      case 'footer':
-        return 'Footer (Rodapé)';
+      case 'sidebar_horizontal':
+        return 'Sidebar Horizontal';
+      case 'sidebar_vertical':
+        return 'Sidebar Vertical';
       default:
-        return position;
+        return type;
     }
   };
+
+  if (isEditing && isLoadingBanner) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -134,7 +208,7 @@ export default function BannerForm() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate('/banners')}
+            onClick={() => navigate('/admin/banners')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
@@ -197,25 +271,66 @@ export default function BannerForm() {
                     )}
                   />
 
-                  {/* Image URL */}
+                  {/* Image Upload */}
                   <FormField
                     control={form.control}
-                    name="imageUrl"
+                    name="image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>URL da Imagem *</FormLabel>
+                        <FormLabel>Imagem *</FormLabel>
                         <FormControl>
-                          <div className="flex gap-2">
-                            <Input 
-                              placeholder="https://exemplo.com/imagem.jpg"
-                              {...field}
-                              onChange={(e) => handleImageUrlChange(e.target.value)}
+                          <div className="space-y-4">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="hidden"
                             />
-                            <Button type="button" variant="outline" size="sm">
-                              <Upload className="h-4 w-4" />
-                            </Button>
+                            
+                            {imagePreview ? (
+                              <div className="relative">
+                                <img 
+                                  src={imagePreview}
+                                  alt="Preview"
+                                  className="w-full h-48 object-cover rounded-lg border"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute top-2 right-2"
+                                  onClick={handleRemoveImage}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-32 border-dashed"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                              >
+                                {isUploading ? (
+                                  <>
+                                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                                    Enviando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="h-8 w-8 mr-2" />
+                                    Clique para enviar uma imagem
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </div>
                         </FormControl>
+                        <FormDescription>
+                          JPG, PNG ou WebP (máx. 2MB)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -224,7 +339,7 @@ export default function BannerForm() {
                   {/* Link URL */}
                   <FormField
                     control={form.control}
-                    name="linkUrl"
+                    name="url"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>URL do Link</FormLabel>
@@ -236,23 +351,23 @@ export default function BannerForm() {
                     )}
                   />
 
-                  {/* Position */}
+                  {/* Type */}
                   <FormField
                     control={form.control}
-                    name="position"
+                    name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Posição *</FormLabel>
+                        <FormLabel>Tipo *</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecione a posição" />
+                              <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="hero">Hero (Principal)</SelectItem>
-                            <SelectItem value="sidebar">Sidebar (Lateral)</SelectItem>
-                            <SelectItem value="footer">Footer (Rodapé)</SelectItem>
+                            <SelectItem value="hero">Hero (Principal - 1200x600px)</SelectItem>
+                            <SelectItem value="sidebar_horizontal">Sidebar Horizontal (400x200px)</SelectItem>
+                            <SelectItem value="sidebar_vertical">Sidebar Vertical (400x600px)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -299,9 +414,9 @@ export default function BannerForm() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">Banner Ativo</FormLabel>
-                          <div className="text-sm text-muted-foreground">
+                          <FormDescription>
                             Ativar este banner para exibição no site
-                          </div>
+                          </FormDescription>
                         </div>
                         <FormControl>
                           <Switch
@@ -317,15 +432,22 @@ export default function BannerForm() {
                   <div className="flex items-center gap-3 pt-6 border-t">
                     <Button 
                       type="submit" 
-                      disabled={isLoading}
+                      disabled={createMutation.isPending || updateMutation.isPending}
                       className="bg-primary hover:bg-primary-dark"
                     >
-                      {isLoading ? 'Salvando...' : (isEditing ? 'Atualizar Banner' : 'Criar Banner')}
+                      {createMutation.isPending || updateMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        isEditing ? 'Atualizar Banner' : 'Criar Banner'
+                      )}
                     </Button>
                     <Button 
                       type="button" 
                       variant="outline" 
-                      onClick={() => navigate('/banners')}
+                      onClick={() => navigate('/admin/banners')}
                     >
                       Cancelar
                     </Button>
@@ -363,9 +485,9 @@ export default function BannerForm() {
                     {form.watch('description') && (
                       <p className="text-sm text-muted-foreground">{form.watch('description')}</p>
                     )}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Badge variant="outline">
-                        {getPositionLabel(form.watch('position'))}
+                        {getTypeLabel(form.watch('type'))}
                       </Badge>
                       <Badge variant={form.watch('isActive') ? 'default' : 'secondary'}>
                         {form.watch('isActive') ? 'Ativo' : 'Inativo'}
@@ -376,8 +498,8 @@ export default function BannerForm() {
               ) : (
                 <div className="w-full h-48 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
-                    <Upload className="h-8 w-8 mx-auto mb-2" />
-                    <p className="text-sm">Adicione uma URL de imagem para ver o preview</p>
+                    <ImageIcon className="h-8 w-8 mx-auto mb-2" />
+                    <p className="text-sm">Adicione uma imagem para ver o preview</p>
                   </div>
                 </div>
               )}
@@ -387,19 +509,23 @@ export default function BannerForm() {
           {/* Tips */}
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Dicas</CardTitle>
+              <CardTitle>Dimensões Recomendadas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <strong>Dimensões recomendadas:</strong>
-                <ul className="mt-1 ml-4 list-disc text-muted-foreground">
-                  <li>Hero: 1200x600px</li>
-                  <li>Sidebar: 400x600px</li>
-                  <li>Footer: 1200x200px</li>
-                </ul>
+                <strong>Hero:</strong>
+                <p className="text-muted-foreground">1200x600px (2:1)</p>
               </div>
               <div>
-                <strong>Formatos suportados:</strong>
+                <strong>Sidebar Horizontal:</strong>
+                <p className="text-muted-foreground">400x200px (2:1)</p>
+              </div>
+              <div>
+                <strong>Sidebar Vertical:</strong>
+                <p className="text-muted-foreground">400x600px (2:3)</p>
+              </div>
+              <div className="pt-2 border-t">
+                <strong>Formatos:</strong>
                 <p className="text-muted-foreground">JPG, PNG, WebP</p>
               </div>
               <div>
