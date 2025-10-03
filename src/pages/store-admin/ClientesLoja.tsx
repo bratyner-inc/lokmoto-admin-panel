@@ -1,56 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Search, Eye, MessageSquare, FileText } from 'lucide-react';
-
-// Mock data específico para a loja
-const mockStoreClients = [
-  { 
-    id: '1', 
-    name: 'Carlos Mendes', 
-    email: 'carlos.mendes@email.com', 
-    phone: '(11) 98765-4321',
-    cpf: '111.222.333-44',
-    status: 'active' as const,
-    activeContracts: 1,
-    totalSpent: 4500,
-    lastRental: '2024-01-20'
-  },
-  { 
-    id: '2', 
-    name: 'Ana Paula', 
-    email: 'ana.paula@email.com', 
-    phone: '(11) 87654-3210',
-    cpf: '222.333.444-55',
-    status: 'active' as const,
-    activeContracts: 2,
-    totalSpent: 8200,
-    lastRental: '2024-01-22'
-  },
-];
+import { useStoreCustomers } from '@/hooks/useStoreCustomers';
+import { Users, Plus, Search, Eye, Loader2 } from 'lucide-react';
 
 export default function ClientesLoja() {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-success text-white">Ativo</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pendente</Badge>;
-      case 'inactive':
-        return <Badge variant="outline">Inativo</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const navigate = useNavigate();
+  const { customers, isLoading } = useStoreCustomers();
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredCustomers = customers.filter(customer => {
+    const search = searchTerm.toLowerCase();
+    return (
+      customer.fullName.toLowerCase().includes(search) ||
+      customer.email.toLowerCase().includes(search) ||
+      customer.documentId.toLowerCase().includes(search) ||
+      customer.phone.toLowerCase().includes(search)
+    );
+  });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -65,7 +42,10 @@ export default function ClientesLoja() {
             Gerencie os clientes da sua loja
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
+        <Button 
+          className="bg-primary hover:bg-primary-dark"
+          onClick={() => navigate('/clientes-loja/novo')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Novo Cliente
         </Button>
@@ -77,20 +57,22 @@ export default function ClientesLoja() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input 
-              placeholder="Buscar clientes..." 
+              placeholder="Buscar por nome, email, CPF ou telefone..." 
               className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{mockStoreClients.length}</div>
-              <p className="text-sm text-muted-foreground">Clientes Ativos</p>
+              <div className="text-2xl font-bold text-primary">{customers.length}</div>
+              <p className="text-sm text-muted-foreground">Total de Clientes</p>
             </div>
           </CardContent>
         </Card>
@@ -98,32 +80,43 @@ export default function ClientesLoja() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-success">
-                {mockStoreClients.reduce((acc, c) => acc + c.activeContracts, 0)}
+                {filteredCustomers.length}
               </div>
-              <p className="text-sm text-muted-foreground">Contratos Ativos</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
-                {formatCurrency(mockStoreClients.reduce((acc, c) => acc + c.totalSpent, 0))}
-              </div>
-              <p className="text-sm text-muted-foreground">Receita Total</p>
+              <p className="text-sm text-muted-foreground">Clientes Filtrados</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Empty State */}
+      {filteredCustomers.length === 0 && (
+        <Card>
+          <CardContent className="pt-12 pb-12 text-center">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-medium text-muted-foreground mb-2">
+              {searchTerm ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {searchTerm ? 'Tente ajustar sua busca' : 'Comece cadastrando seu primeiro cliente'}
+            </p>
+            {!searchTerm && (
+              <Button onClick={() => navigate('/clientes-loja/novo')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Cadastrar Cliente
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Clients Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockStoreClients.map((client) => (
+        {filteredCustomers.map((client) => (
           <Card key={client.id} className="shadow-card hover:shadow-elegant transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{client.name}</CardTitle>
-                {getStatusBadge(client.status)}
+                <CardTitle className="text-lg">{client.fullName}</CardTitle>
+                <Badge variant="default" className="bg-success text-white">Ativo</Badge>
               </div>
               <CardDescription>{client.email}</CardDescription>
             </CardHeader>
@@ -137,40 +130,24 @@ export default function ClientesLoja() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">CPF:</span>
-                    <span className="font-mono text-sm">{client.cpf}</span>
+                    <span className="font-mono text-sm">{client.documentId}</span>
                   </div>
                 </div>
                 
-                <div className="pt-3 border-t">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-bold text-primary">{client.activeContracts}</div>
-                      <div className="text-xs text-muted-foreground">Contratos</div>
-                    </div>
-                    <div>
-                      <div className="text-lg font-bold text-success">{formatCurrency(client.totalSpent)}</div>
-                      <div className="text-xs text-muted-foreground">Total Gasto</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted-foreground text-center">
-                  Último aluguel: {new Date(client.lastRental).toLocaleDateString('pt-BR')}
+                <div className="text-xs text-muted-foreground text-center pt-3 border-t">
+                  Cadastrado em: {new Date(client.createdAt).toLocaleDateString('pt-BR')}
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-3 border-t">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => navigate(`/clientes-loja/${client.id}`)}
+                  >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Contato
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <FileText className="h-4 w-4 mr-1" />
-                    Contrato
                   </Button>
                 </div>
               </div>

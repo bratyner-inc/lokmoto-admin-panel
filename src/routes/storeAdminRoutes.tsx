@@ -4,6 +4,8 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 // Lazy loading das páginas do Admin de Loja
 const ClientesLoja = lazy(() => import('@/pages/store-admin/ClientesLoja'));
+const ClienteLojaDetalhes = lazy(() => import('@/pages/store-admin/ClienteLojaDetalhes'));
+const ClienteLojaForm = lazy(() => import('@/pages/store-admin/ClienteLojaForm'));
 const Pagamentos = lazy(() => import('@/pages/store-admin/Pagamentos'));
 const Contratos = lazy(() => import('@/pages/store-admin/Contratos'));
 const ContratoForm = lazy(() => import('@/pages/store-admin/ContratoForm'));
@@ -24,6 +26,30 @@ export const storeAdminRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <ClientesLoja />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes-loja/novo',
+    element: (
+      <ProtectedRoute>
+        <ClienteLojaForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes-loja/:id',
+    element: (
+      <ProtectedRoute>
+        <ClienteLojaDetalhes />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes-loja/:id/editar',
+    element: (
+      <ProtectedRoute>
+        <ClienteLojaForm />
       </ProtectedRoute>
     ),
   },
