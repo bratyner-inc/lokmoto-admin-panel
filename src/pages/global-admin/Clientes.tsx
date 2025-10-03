@@ -16,6 +16,8 @@ export default function Clientes() {
   const { data: customers = [], isLoading } = useCustomers();
   const deleteMutation = useDeleteCustomer();
 
+  console.log(customers)
+
   const handleDelete = async (customerId: string, customerName: string) => {
     if (window.confirm(`Tem certeza que deseja excluir o cliente ${customerName}?`)) {
       try {
