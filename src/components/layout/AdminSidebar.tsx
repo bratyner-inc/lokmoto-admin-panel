@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthV2 } from '@/hooks/useAuthV2';
 import {
   Sidebar,
   SidebarContent,
@@ -19,57 +19,50 @@ import {
   UserCog, 
   CreditCard, 
   Image,
-  Car,
+  Bike,
   FileText,
   DollarSign,
   ClipboardList,
   PenTool,
-  Bike
 } from 'lucide-react';
-import { UserRole, PERMISSIONS } from '@/types';
 
-// Menu items para Admin Global
+// Menu items para Admin Global (platform_admin)
 const globalAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Clientes', url: '/clientes', icon: Users, permission: PERMISSIONS.MANAGE_CLIENTS },
-  { title: 'Usuários', url: '/usuarios', icon: UserCog, permission: PERMISSIONS.MANAGE_USERS },
-  { title: 'Financeiro', url: '/financeiro', icon: DollarSign, permission: PERMISSIONS.MANAGE_FINANCIAL },
-  { title: 'Banners', url: '/banners', icon: Image, permission: PERMISSIONS.MANAGE_BANNERS },
+  { title: 'Clientes', url: '/clientes', icon: Users },
+  { title: 'Usuários', url: '/usuarios', icon: UserCog },
+  { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
+  { title: 'Banners', url: '/banners', icon: Image },
 ];
 
-// Menu items para Admin de Loja
+// Menu items para Admin de Loja (rental_company)
 const storeAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Clientes', url: '/clientes', icon: Users, permission: PERMISSIONS.VIEW_CLIENTS },
-  { title: 'Pagamentos', url: '/pagamentos', icon: CreditCard, permission: PERMISSIONS.MANAGE_PAYMENTS },
-  { title: 'Contratos', url: '/contratos', icon: FileText, permission: PERMISSIONS.MANAGE_CONTRACTS },
-  { title: 'Veículos', url: '/veiculos', icon: Car, permission: PERMISSIONS.MANAGE_VEHICLES },
-  { title: 'Propostas', url: '/propostas', icon: ClipboardList, permission: PERMISSIONS.MANAGE_PROPOSALS },
-  { title: 'Assinatura', url: '/assinatura', icon: PenTool, permission: PERMISSIONS.MANAGE_SUBSCRIPTION },
+  { title: 'Clientes', url: '/clientes-loja', icon: Users },
+  { title: 'Veículos', url: '/veiculos', icon: Bike },
+  { title: 'Propostas', url: '/propostas', icon: ClipboardList },
+  { title: 'Contratos', url: '/contratos', icon: FileText },
+  { title: 'Pagamentos', url: '/pagamentos', icon: CreditCard },
+  { title: 'Assinatura', url: '/assinatura', icon: PenTool },
 ];
 
 export const AdminSidebar: React.FC = () => {
-  const { user, hasPermission } = useAuth();
+  const { user, role, isPlatformAdmin, isRentalCompany } = useAuthV2();
   const { open: isSidebarOpen } = useSidebar();
   const location = useLocation();
 
   // Determinar items do menu baseado no role do usuário
   const menuItems = React.useMemo(() => {
-    if (!user) return [];
+    if (!user || !role) return [];
     
-    switch (user.role) {
-      case UserRole.GLOBAL_ADMIN:
-        return globalAdminItems.filter(item => 
-          !item.permission || hasPermission(item.permission)
-        );
-      case UserRole.STORE_ADMIN:
-        return storeAdminItems.filter(item => 
-          !item.permission || hasPermission(item.permission)
-        );
-      default:
-        return [];
+    if (isPlatformAdmin) {
+      return globalAdminItems;
+    } else if (isRentalCompany) {
+      return storeAdminItems;
     }
-  }, [user, hasPermission]);
+    
+    return [];
+  }, [user, role, isPlatformAdmin, isRentalCompany]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -99,7 +92,7 @@ export const AdminSidebar: React.FC = () => {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {user?.role === UserRole.GLOBAL_ADMIN ? 'Administração Global' : 'Administração da Loja'}
+            {isPlatformAdmin ? 'Administração Global' : 'Administração da Loja'}
           </SidebarGroupLabel>
           
           <SidebarGroupContent>
@@ -127,7 +120,7 @@ export const AdminSidebar: React.FC = () => {
             <div className="flex items-center justify-center">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <span className="text-xs font-medium text-white">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  {user.email.substring(0, 2).toUpperCase()}
                 </span>
               </div>
             </div>

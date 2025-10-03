@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthV2 } from '@/hooks/useAuthV2';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,30 +12,27 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Settings, User, Bell } from 'lucide-react';
-import { UserRole } from '@/types';
+import { LogOut, Settings, User as UserIcon, Bell } from 'lucide-react';
 
 export const AdminHeader: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, role, isPlatformAdmin, isRentalCompany, signOut } = useAuthV2();
 
-  const getRoleBadge = (role: UserRole) => {
-    switch (role) {
-      case UserRole.GLOBAL_ADMIN:
-        return <Badge variant="destructive" className="text-xs">Admin Global</Badge>;
-      case UserRole.STORE_ADMIN:
-        return <Badge variant="secondary" className="text-xs">Admin Loja</Badge>;
-      default:
-        return null;
+  const getRoleBadge = () => {
+    if (isPlatformAdmin) {
+      return <Badge variant="destructive" className="text-xs">Admin Global</Badge>;
+    } else if (isRentalCompany) {
+      return <Badge variant="secondary" className="text-xs">Admin Loja</Badge>;
     }
+    return null;
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = '/login';
   };
 
   return (
@@ -66,19 +63,20 @@ export const AdminHeader: React.FC = () => {
               <Button variant="ghost" className="relative h-10 flex items-center gap-3 px-3">
                 <div className="flex items-center gap-3">
                   <div className="text-right hidden sm:block">
-                    <p className="text-sm font-medium leading-none">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm font-medium leading-none">{user?.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isPlatformAdmin ? 'Administrador' : 'Locadora'}
+                    </p>
                   </div>
-                  {user?.role && (
+                  {role && (
                     <div className="hidden sm:block">
-                      {getRoleBadge(user.role)}
+                      {getRoleBadge()}
                     </div>
                   )}
                 </div>
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
                   <AvatarFallback className="bg-primary text-white text-xs font-medium">
-                    {user?.name ? getInitials(user.name) : 'U'}
+                    {user?.email ? getInitials(user.email) : 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -87,11 +85,13 @@ export const AdminHeader: React.FC = () => {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-2">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-                  {user?.role && (
+                  <p className="text-sm font-medium leading-none">{user?.email}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {isPlatformAdmin ? 'Administrador Global' : 'Administrador de Loja'}
+                  </p>
+                  {role && (
                     <div className="flex justify-start">
-                      {getRoleBadge(user.role)}
+                      {getRoleBadge()}
                     </div>
                   )}
                 </div>
@@ -100,7 +100,7 @@ export const AdminHeader: React.FC = () => {
               <DropdownMenuSeparator />
               
               <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
+                <UserIcon className="mr-2 h-4 w-4" />
                 <span>Meu Perfil</span>
               </DropdownMenuItem>
               
@@ -112,7 +112,7 @@ export const AdminHeader: React.FC = () => {
               <DropdownMenuSeparator />
               
               <DropdownMenuItem 
-                onClick={logout}
+                onClick={handleLogout}
                 className="text-destructive focus:text-destructive"
               >
                 <LogOut className="mr-2 h-4 w-4" />
