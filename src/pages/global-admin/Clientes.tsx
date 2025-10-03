@@ -1,67 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-
-// Mock data
-const mockClients = [
-  { 
-    id: '1', 
-    name: 'João Silva', 
-    email: 'joao.silva@email.com', 
-    phone: '(11) 99999-9999',
-    cpf: '123.456.789-00',
-    status: 'active' as const,
-    createdAt: '2024-01-15',
-    totalContracts: 3
-  },
-  { 
-    id: '2', 
-    name: 'Maria Santos', 
-    email: 'maria.santos@email.com', 
-    phone: '(11) 88888-8888',
-    cpf: '987.654.321-00',
-    status: 'active' as const,
-    createdAt: '2024-01-10',
-    totalContracts: 1
-  },
-  { 
-    id: '3', 
-    name: 'Pedro Costa', 
-    email: 'pedro.costa@email.com', 
-    phone: '(11) 77777-7777',
-    cpf: '555.444.333-22',
-    status: 'pending' as const,
-    createdAt: '2024-01-20',
-    totalContracts: 0
-  },
-];
+import { Users, Plus, Search, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useCustomers, useDeleteCustomer } from '@/hooks/useCustomers';
 
 export default function Clientes() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const { data: customers = [], isLoading } = useCustomers();
+  const deleteMutation = useDeleteCustomer();
 
-  const handleDelete = (clientId: string, clientName: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir o cliente ${clientName}?`)) {
-      // Simular API call
-      toast.success('Cliente excluído com sucesso!');
+  const handleDelete = async (customerId: string, customerName: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir o cliente ${customerName}?`)) {
+      try {
+        await deleteMutation.mutateAsync(customerId);
+        toast({
+          title: "Cliente excluído",
+          description: "O cliente foi removido com sucesso.",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro ao excluir",
+          description: "Não foi possível excluir o cliente.",
+          variant: "destructive",
+        });
+      }
     }
   };
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-success text-white">Ativo</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pendente</Badge>;
-      case 'inactive':
-        return <Badge variant="outline">Inativo</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+
+  const filteredCustomers = customers.filter(customer =>
+    customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.documentId.includes(searchTerm) ||
+    customer.phone.includes(searchTerm)
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -96,25 +82,23 @@ export default function Clientes() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input 
-                  placeholder="Buscar por nome, e-mail ou CPF..." 
+                  placeholder="Buscar por nome, e-mail, CPF ou telefone..." 
                   className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filtros Avançados
-            </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{mockClients.length}</div>
+              <div className="text-2xl font-bold text-primary">{customers.length}</div>
               <p className="text-sm text-muted-foreground">Total de Clientes</p>
             </div>
           </CardContent>
@@ -122,30 +106,8 @@ export default function Clientes() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-success">
-                {mockClients.filter(c => c.status === 'active').length}
-              </div>
-              <p className="text-sm text-muted-foreground">Clientes Ativos</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-warning">
-                {mockClients.filter(c => c.status === 'pending').length}
-              </div>
-              <p className="text-sm text-muted-foreground">Pendentes</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
-                {mockClients.reduce((acc, c) => acc + c.totalContracts, 0)}
-              </div>
-              <p className="text-sm text-muted-foreground">Total Contratos</p>
+              <div className="text-2xl font-bold text-primary">{filteredCustomers.length}</div>
+              <p className="text-sm text-muted-foreground">Resultados da Busca</p>
             </div>
           </CardContent>
         </Card>
@@ -160,68 +122,80 @@ export default function Clientes() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Nome</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">E-mail</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Telefone</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">CPF</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Contratos</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockClients.map((client) => (
-                  <tr key={client.id} className="border-b hover:bg-muted/30 transition-colors">
-                    <td className="py-4 px-4">
-                      <div>
-                        <div className="font-medium text-foreground">{client.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Cadastrado em {new Date(client.createdAt).toLocaleDateString('pt-BR')}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-foreground">{client.email}</td>
-                    <td className="py-4 px-4 text-foreground">{client.phone}</td>
-                    <td className="py-4 px-4 text-foreground font-mono">{client.cpf}</td>
-                    <td className="py-4 px-4">{getStatusBadge(client.status)}</td>
-                    <td className="py-4 px-4 text-center">
-                      <span className="font-medium text-primary">{client.totalContracts}</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => navigate(`/clientes/${client.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => navigate(`/clientes/editar/${client.id}`)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(client.id, client.name)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+          {filteredCustomers.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg text-muted-foreground">
+                {searchTerm ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+              </p>
+              {!searchTerm && (
+                <Button 
+                  className="mt-4"
+                  onClick={() => navigate('/clientes/novo')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Primeiro Cliente
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Nome</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">E-mail</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Telefone</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">CPF</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Cadastro</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredCustomers.map((customer) => (
+                    <tr key={customer.id} className="border-b hover:bg-muted/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-foreground">{customer.fullName}</div>
+                      </td>
+                      <td className="py-4 px-4 text-foreground">{customer.email}</td>
+                      <td className="py-4 px-4 text-foreground">{customer.phone}</td>
+                      <td className="py-4 px-4 text-foreground font-mono">{customer.documentId}</td>
+                      <td className="py-4 px-4 text-foreground">
+                        {new Date(customer.createdAt).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => navigate(`/clientes/${customer.id}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => navigate(`/clientes/${customer.id}/editar`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(customer.id, customer.fullName)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
