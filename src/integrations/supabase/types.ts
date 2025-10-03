@@ -263,6 +263,7 @@ export type Database = {
           chassis: string
           color: string
           created_at: string
+          daily_rate: number
           engine_capacity: number
           id: string
           is_available: boolean
@@ -281,6 +282,7 @@ export type Database = {
           chassis: string
           color: string
           created_at?: string
+          daily_rate?: number
           engine_capacity: number
           id?: string
           is_available?: boolean
@@ -299,6 +301,7 @@ export type Database = {
           chassis?: string
           color?: string
           created_at?: string
+          daily_rate?: number
           engine_capacity?: number
           id?: string
           is_available?: boolean

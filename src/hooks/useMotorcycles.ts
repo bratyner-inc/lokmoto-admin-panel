@@ -12,6 +12,11 @@ export function useMotorcycles() {
     queryFn: () => repository.getAll(),
   });
 
+  const { data: categories } = useQuery({
+    queryKey: ['vehicle-categories'],
+    queryFn: () => repository.getCategories(),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => repository.delete(id),
     onSuccess: () => {
@@ -30,6 +35,7 @@ export function useMotorcycles() {
 
   return {
     motorcycles: motorcycles || [],
+    categories: categories || [],
     isLoading,
     error,
     deleteMotorcycle: deleteMutation.mutateAsync,

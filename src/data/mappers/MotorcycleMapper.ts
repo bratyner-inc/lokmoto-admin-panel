@@ -13,6 +13,7 @@ interface MotorcycleDB {
   chassis: string;
   color: string;
   engine_capacity: number;
+  daily_rate: number;
   is_available: boolean;
   availability_periods: any;
   created_at: string;
@@ -34,6 +35,7 @@ export class MotorcycleMapper {
       chassis: raw.chassis,
       color: raw.color,
       engineCapacity: raw.engine_capacity,
+      dailyRate: raw.daily_rate,
       isAvailable: raw.is_available,
       availabilityPeriods: raw.availability_periods,
       createdAt: new Date(raw.created_at),
@@ -54,6 +56,7 @@ export class MotorcycleMapper {
       ...(domain.chassis && { chassis: domain.chassis }),
       ...(domain.color && { color: domain.color }),
       ...(domain.engineCapacity && { engine_capacity: domain.engineCapacity }),
+      ...(domain.dailyRate !== undefined && { daily_rate: domain.dailyRate }),
       ...(domain.isAvailable !== undefined && { is_available: domain.isAvailable }),
       ...(domain.availabilityPeriods && { availability_periods: domain.availabilityPeriods }),
     };

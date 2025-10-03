@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { motorcycleFormSchema, type MotorcycleFormData } from '@/lib/validations/motorcycle';
 import { SupabaseMotorcycleRepository } from '@/data/repositories/SupabaseMotorcycleRepository';
+import { useMotorcycles } from '@/hooks/useMotorcycles';
 import { 
   Bike,
   ArrowLeft, 
@@ -24,6 +25,7 @@ export default function VeiculoForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { categories } = useMotorcycles();
 
   const form = useForm<MotorcycleFormData>({
     resolver: zodResolver(motorcycleFormSchema),
@@ -37,6 +39,7 @@ export default function VeiculoForm() {
       chassis: '',
       color: '',
       engineCapacity: 0,
+      dailyRate: 0,
       categoryId: null,
       isAvailable: true,
     }
@@ -57,6 +60,7 @@ export default function VeiculoForm() {
         chassis: data.chassis,
         color: data.color,
         engineCapacity: data.engineCapacity,
+        dailyRate: data.dailyRate,
         categoryId: data.categoryId || undefined,
         isAvailable: data.isAvailable,
       });
@@ -232,22 +236,78 @@ export default function VeiculoForm() {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="engineCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cilindrada (cc) *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="600"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Cilindrada do motor em centímetros cúbicos
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dailyRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Valor da Diária (R$) *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            step="0.01"
+                            placeholder="150.00"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Valor cobrado por dia de locação
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="engineCapacity"
+                  name="categoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cilindrada (cc) *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="600"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
+                      <FormLabel>Categoria</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || undefined}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma categoria (opcional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormDescription>
-                        Cilindrada do motor em centímetros cúbicos
+                        Categoria do veículo para classificação
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

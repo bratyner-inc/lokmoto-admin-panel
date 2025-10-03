@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useMotorcycle } from '@/hooks/useMotorcycles';
+import { useMotorcycle, useMotorcycles } from '@/hooks/useMotorcycles';
 import { 
   Car, 
   ArrowLeft, 
@@ -22,6 +22,7 @@ export default function VeiculoEdicao() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { motorcycle, isLoading: isLoadingMotorcycle, updateMotorcycle, isUpdating } = useMotorcycle(id || '');
+  const { categories } = useMotorcycles();
 
   const form = useForm<MotorcycleFormData>({
     resolver: zodResolver(motorcycleFormSchema),
@@ -35,6 +36,8 @@ export default function VeiculoEdicao() {
       chassis: motorcycle.chassis,
       color: motorcycle.color,
       engineCapacity: motorcycle.engineCapacity,
+      dailyRate: motorcycle.dailyRate,
+      categoryId: motorcycle.categoryId || null,
       isAvailable: motorcycle.isAvailable,
     } : undefined,
   });
@@ -263,6 +266,54 @@ export default function VeiculoEdicao() {
                           onChange={(e) => field.onChange(parseInt(e.target.value))}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="dailyRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Valor da Diária (R$)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          step="0.01"
+                          placeholder="150.00"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || undefined}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma categoria (opcional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

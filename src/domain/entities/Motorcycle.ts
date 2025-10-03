@@ -19,6 +19,7 @@ export interface Motorcycle {
   chassis: string;
   color: string;
   engineCapacity: number;
+  dailyRate: number;
   isAvailable: boolean;
   availabilityPeriods?: Array<{
     start: Date;

@@ -59,6 +59,12 @@ export const motorcycleFormSchema = z.object({
     .min(50, 'Cilindrada deve ser maior ou igual a 50cc')
     .max(2500, 'Cilindrada deve ser menor ou igual a 2500cc'),
   
+  // Valor da diária
+  dailyRate: z.number()
+    .positive('Valor da diária deve ser maior que zero')
+    .min(0.01, 'Valor da diária deve ser no mínimo R$ 0,01')
+    .max(9999.99, 'Valor da diária deve ser no máximo R$ 9.999,99'),
+  
   // Categoria (opcional)
   categoryId: z.string().uuid('ID de categoria inválido').optional().nullable(),
   
