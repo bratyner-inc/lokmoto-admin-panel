@@ -5,64 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { FileText, Plus, Search, Calendar, User, Car, Eye, Edit, Download, Trash2, Filter } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-// Mock data
-const mockContracts = [
-  {
-    id: 'CTR-2024-001',
-    clientName: 'Carlos Mendes',
-    vehicleModel: 'Honda CB 600F',
-    vehiclePlate: 'ABC-1234',
-    startDate: '2024-01-15',
-    endDate: '2024-02-15',
-    dailyRate: 85,
-    totalAmount: 2550,
-    status: 'active' as const,
-    paymentStatus: 'paid' as const,
-    createdAt: '2024-01-10'
-  },
-  {
-    id: 'CTR-2024-002',
-    clientName: 'Ana Paula',
-    vehicleModel: 'Yamaha MT-07',
-    vehiclePlate: 'XYZ-5678',
-    startDate: '2024-01-20',
-    endDate: '2024-03-20',
-    dailyRate: 95,
-    totalAmount: 5700,
-    status: 'active' as const,
-    paymentStatus: 'partial' as const,
-    createdAt: '2024-01-18'
-  },
-  {
-    id: 'CTR-2024-003',
-    clientName: 'Roberto Silva',
-    vehicleModel: 'Kawasaki Ninja 300',
-    vehiclePlate: 'MOT-9012',
-    startDate: '2024-01-05',
-    endDate: '2024-01-20',
-    dailyRate: 75,
-    totalAmount: 1125,
-    status: 'completed' as const,
-    paymentStatus: 'paid' as const,
-    createdAt: '2024-01-02'
-  }
-];
+import { FileText, Plus, Search, Calendar, User, Car, Eye, Edit, Download, Trash2, Filter, Loader2 } from 'lucide-react';
+import { useContracts, useDeleteContract } from '@/hooks/useContracts';
+import { useAuthV2 } from '@/hooks/useAuthV2';
 
 export default function Contratos() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user } = useAuthV2();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  const filteredContracts = mockContracts.filter(contract => {
+  const { data: contracts = [], isLoading } = useContracts(user?.id);
+  const { mutate: deleteContract } = useDeleteContract();
+
+  const filteredContracts = contracts.filter(contract => {
     const matchesSearch = 
-      contract.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.vehicleModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase());
+      contract.id.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = filterStatus === 'all' || contract.status === filterStatus;
     
@@ -70,10 +28,7 @@ export default function Contratos() {
   });
 
   const handleDeleteContract = (contractId: string) => {
-    toast({
-      title: 'Contrato excluído',
-      description: 'O contrato foi excluído com sucesso.',
-    });
+    deleteContract(contractId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -113,12 +68,18 @@ export default function Contratos() {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const calculateDays = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
+  const calculateDays = (startDate: Date, endDate: Date) => {
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -150,7 +111,7 @@ export default function Contratos() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
-                {mockContracts.filter(c => c.status === 'active').length}
+                {contracts.filter(c => c.status === 'active').length}
               </div>
               <p className="text-sm text-muted-foreground">Contratos Ativos</p>
             </div>
@@ -160,7 +121,7 @@ export default function Contratos() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-success">
-                {mockContracts.filter(c => c.status === 'completed').length}
+                {contracts.filter(c => c.status === 'finished').length}
               </div>
               <p className="text-sm text-muted-foreground">Concluídos</p>
             </div>
@@ -170,9 +131,9 @@ export default function Contratos() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
-                {formatCurrency(mockContracts.reduce((acc, c) => acc + c.totalAmount, 0))}
+                {contracts.length}
               </div>
-              <p className="text-sm text-muted-foreground">Receita Total</p>
+              <p className="text-sm text-muted-foreground">Total de Contratos</p>
             </div>
           </CardContent>
         </Card>
@@ -180,9 +141,9 @@ export default function Contratos() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-warning">
-                {mockContracts.filter(c => c.paymentStatus === 'partial').length}
+                {contracts.filter(c => c.status === 'pending_signature').length}
               </div>
-              <p className="text-sm text-muted-foreground">Pagamentos Parciais</p>
+              <p className="text-sm text-muted-foreground">Pendentes</p>
             </div>
           </CardContent>
         </Card>
@@ -211,8 +172,10 @@ export default function Contratos() {
               >
                 <option value="all">Todos os Status</option>
                 <option value="active">Ativos</option>
-                <option value="completed">Concluídos</option>
-                <option value="cancelled">Cancelados</option>
+                <option value="finished">Concluídos</option>
+                <option value="canceled">Cancelados</option>
+                <option value="pending_signature">Pendente Assinatura</option>
+                <option value="pending_payment">Pendente Pagamento</option>
               </select>
             </div>
           </div>
@@ -221,63 +184,32 @@ export default function Contratos() {
 
       {/* Contracts List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredContracts.map((contract) => (
+        {filteredContracts.map((contract: any) => (
           <Card key={contract.id} className="shadow-card hover:shadow-elegant transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-mono">{contract.id}</CardTitle>
                 <div className="flex gap-2">
                   {getStatusBadge(contract.status)}
-                  {getPaymentStatusBadge(contract.paymentStatus)}
                 </div>
               </div>
               <CardDescription>
-                Criado em {formatDate(contract.createdAt)}
+                Criado em {formatDate(contract.createdAt.toISOString())}
               </CardDescription>
             </CardHeader>
             
             <CardContent>
               <div className="space-y-4">
-                {/* Client Info */}
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                  <User className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <div className="font-medium text-foreground">{contract.clientName}</div>
-                    <div className="text-sm text-muted-foreground">Cliente</div>
-                  </div>
-                </div>
-
-                {/* Vehicle Info */}
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                  <Car className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <div className="font-medium text-foreground">{contract.vehicleModel}</div>
-                    <div className="text-sm text-muted-foreground">Placa: {contract.vehiclePlate}</div>
-                  </div>
-                </div>
-
                 {/* Contract Period */}
                 <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <div className="font-medium text-foreground">
-                      {formatDate(contract.startDate)} - {formatDate(contract.endDate)}
+                      {formatDate(contract.startDate.toISOString())} - {formatDate(contract.endDate.toISOString())}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {calculateDays(contract.startDate, contract.endDate)} dias
                     </div>
-                  </div>
-                </div>
-
-                {/* Financial Info */}
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-primary">{formatCurrency(contract.dailyRate)}</div>
-                    <div className="text-xs text-muted-foreground">Diária</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-success">{formatCurrency(contract.totalAmount)}</div>
-                    <div className="text-xs text-muted-foreground">Total</div>
                   </div>
                 </div>
 
@@ -301,10 +233,17 @@ export default function Contratos() {
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Download className="h-4 w-4 mr-1" />
-                    PDF
-                  </Button>
+                  {contract.contractFile && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => window.open(contract.contractFile, '_blank')}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      PDF
+                    </Button>
+                  )}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive hover:text-white">

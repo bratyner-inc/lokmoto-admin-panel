@@ -11,19 +11,22 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, FileText, CalendarIcon, User, Car, DollarSign, Save } from 'lucide-react';
+import { ArrowLeft, FileText, CalendarIcon, User, Car, DollarSign, Save, Upload, X, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { Contract } from '@/types';
+import { useAuthV2 } from '@/hooks/useAuthV2';
+import { useCreateContract, useUpdateContract, useContract, uploadContractFile, deleteContractFile } from '@/hooks/useContracts';
+import { useCustomers } from '@/hooks/useCustomers';
+import { useMotorcycles } from '@/hooks/useMotorcycles';
 
 const contractSchema = z.object({
-  clientId: z.string().min(1, 'Cliente é obrigatório'),
-  vehicleId: z.string().min(1, 'Veículo é obrigatório'),
+  customerId: z.string().min(1, 'Cliente é obrigatório'),
+  motorcycleId: z.string().min(1, 'Veículo é obrigatório'),
   startDate: z.date({ required_error: 'Data de início é obrigatória' }),
   endDate: z.date({ required_error: 'Data de fim é obrigatória' }),
   dailyRate: z.number().min(1, 'Valor da diária deve ser maior que zero'),
-  notes: z.string().optional(),
+  observations: z.string().optional(),
+  contractFile: z.instanceof(File).optional(),
 }).refine((data) => data.endDate > data.startDate, {
   message: "Data de fim deve ser posterior à data de início",
   path: ["endDate"],
@@ -31,54 +34,34 @@ const contractSchema = z.object({
 
 type ContractFormData = z.infer<typeof contractSchema>;
 
-// Mock data
-const mockClients = [
-  { id: 'client-1', name: 'Carlos Mendes', email: 'carlos@email.com' },
-  { id: 'client-2', name: 'Ana Paula Santos', email: 'ana@email.com' },
-  { id: 'client-3', name: 'Roberto Silva', email: 'roberto@email.com' },
-  { id: 'client-4', name: 'Mariana Costa', email: 'mariana@email.com' },
-];
-
-const mockVehicles = [
-  { id: 'vehicle-1', model: 'Honda CB 600F', brand: 'Honda', plate: 'ABC-1234', dailyRate: 85, status: 'available' },
-  { id: 'vehicle-2', model: 'Yamaha MT-07', brand: 'Yamaha', plate: 'XYZ-5678', dailyRate: 95, status: 'available' },
-  { id: 'vehicle-3', model: 'Kawasaki Ninja 300', brand: 'Kawasaki', plate: 'MOT-9012', dailyRate: 75, status: 'available' },
-  { id: 'vehicle-4', model: 'BMW F 800 R', brand: 'BMW', plate: 'BMW-3456', dailyRate: 120, status: 'available' },
-];
-
-const mockContract = {
-  id: 'CTR-2024-001',
-  clientId: 'client-1',
-  vehicleId: 'vehicle-1',
-  startDate: new Date('2024-01-15'),
-  endDate: new Date('2024-02-15'),
-  dailyRate: 85,
-  totalAmount: 2550,
-  status: 'active' as const,
-  paymentStatus: 'paid' as const,
-  notes: 'Contrato padrão de locação mensal',
-  createdAt: '2024-01-10T00:00:00Z',
-};
-
 export default function ContratoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const { user } = useAuthV2();
+  const [selectedMotorcycle, setSelectedMotorcycle] = useState<any>(null);
   const [calculatedTotal, setCalculatedTotal] = useState(0);
+  const [contractFile, setContractFile] = useState<File | null>(null);
+  const [existingFileUrl, setExistingFileUrl] = useState<string | null>(null);
 
   const isEditing = Boolean(id);
+
+  const { data: customers = [] } = useCustomers();
+  const { motorcycles = [] } = useMotorcycles();
+  const { data: existingContract } = useContract(id || '');
+  const { mutate: createContract, isPending: isCreating } = useCreateContract();
+  const { mutate: updateContract, isPending: isUpdating } = useUpdateContract();
+
+  const isLoading = isCreating || isUpdating;
 
   const form = useForm<ContractFormData>({
     resolver: zodResolver(contractSchema),
     defaultValues: {
-      clientId: '',
-      vehicleId: '',
+      customerId: '',
+      motorcycleId: '',
       startDate: undefined,
       endDate: undefined,
       dailyRate: 0,
-      notes: '',
+      observations: '',
     },
   });
 
@@ -95,57 +78,85 @@ export default function ContratoForm() {
 
   // Load contract data for editing
   useEffect(() => {
-    if (isEditing) {
-      // Simulate API call
-      setTimeout(() => {
-        form.reset({
-          clientId: mockContract.clientId,
-          vehicleId: mockContract.vehicleId,
-          startDate: mockContract.startDate,
-          endDate: mockContract.endDate,
-          dailyRate: mockContract.dailyRate,
-          notes: mockContract.notes,
-        });
-        
-        const vehicle = mockVehicles.find(v => v.id === mockContract.vehicleId);
-        setSelectedVehicle(vehicle);
-      }, 500);
+    if (isEditing && existingContract) {
+      form.reset({
+        customerId: existingContract.customerId,
+        motorcycleId: existingContract.motorcycleId,
+        startDate: existingContract.startDate,
+        endDate: existingContract.endDate,
+        dailyRate: 0,
+        observations: existingContract.observations,
+      });
+      
+      if (existingContract.contractFile) {
+        setExistingFileUrl(existingContract.contractFile);
+      }
+      
+      const motorcycle = motorcycles.find(m => m.id === existingContract.motorcycleId);
+      setSelectedMotorcycle(motorcycle);
     }
-  }, [isEditing, form]);
+  }, [isEditing, existingContract, form, motorcycles]);
 
-  const onSubmit = async (data: ContractFormData) => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const days = Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24));
-      const total = days * data.dailyRate;
-      
-      toast({
-        title: isEditing ? 'Contrato atualizado!' : 'Contrato criado!',
-        description: `Contrato ${isEditing ? 'atualizado' : 'criado'} com sucesso. Total: R$ ${total.toFixed(2)}`,
-      });
-      
-      navigate('/contratos');
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Ocorreu um erro ao salvar o contrato.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        alert('O arquivo deve ter no máximo 5MB');
+        return;
+      }
+      setContractFile(file);
     }
   };
 
-  const handleVehicleChange = (vehicleId: string) => {
-    const vehicle = mockVehicles.find(v => v.id === vehicleId);
-    setSelectedVehicle(vehicle);
+  const handleRemoveFile = () => {
+    setContractFile(null);
+    setExistingFileUrl(null);
+  };
+
+  const onSubmit = async (data: ContractFormData) => {
+    if (!user) return;
+
+    try {
+      const contractId = id || crypto.randomUUID();
+      let fileUrl = existingFileUrl;
+
+      // Upload file if exists
+      if (contractFile) {
+        fileUrl = await uploadContractFile(contractFile, contractId);
+      }
+
+      const contractData = {
+        id: contractId,
+        customerId: data.customerId,
+        motorcycleId: data.motorcycleId,
+        rentalCompanyId: user.id,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        observations: data.observations,
+        contractFile: fileUrl,
+        status: 'pending_signature' as const,
+      };
+
+      if (isEditing) {
+        updateContract({ id: contractId, contract: contractData }, {
+          onSuccess: () => navigate('/contratos'),
+        });
+      } else {
+        createContract(contractData, {
+          onSuccess: () => navigate('/contratos'),
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao salvar contrato:', error);
+    }
+  };
+
+  const handleMotorcycleChange = (motorcycleId: string) => {
+    const motorcycle = motorcycles.find(m => m.id === motorcycleId);
+    setSelectedMotorcycle(motorcycle);
     
-    if (vehicle) {
-      form.setValue('dailyRate', vehicle.dailyRate);
+    if (motorcycle) {
+      form.setValue('dailyRate', motorcycle.dailyRate);
     }
   };
 
@@ -201,24 +212,24 @@ export default function ContratoForm() {
                   {/* Client Selection */}
                   <FormField
                     control={form.control}
-                    name="clientId"
+                    name="customerId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Cliente *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o cliente" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {mockClients.map((client) => (
-                              <SelectItem key={client.id} value={client.id}>
+                            {customers.map((customer) => (
+                              <SelectItem key={customer.id} value={customer.id}>
                                 <div className="flex items-center gap-2">
                                   <User className="h-4 w-4" />
                                   <div>
-                                    <div className="font-medium">{client.name}</div>
-                                    <div className="text-xs text-muted-foreground">{client.email}</div>
+                                    <div className="font-medium">{customer.fullName}</div>
+                                    <div className="text-xs text-muted-foreground">{customer.email}</div>
                                   </div>
                                 </div>
                               </SelectItem>
@@ -233,16 +244,16 @@ export default function ContratoForm() {
                   {/* Vehicle Selection */}
                   <FormField
                     control={form.control}
-                    name="vehicleId"
+                    name="motorcycleId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Veículo *</FormLabel>
                         <Select 
                           onValueChange={(value) => {
                             field.onChange(value);
-                            handleVehicleChange(value);
+                            handleMotorcycleChange(value);
                           }} 
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -250,14 +261,14 @@ export default function ContratoForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {mockVehicles.filter(v => v.status === 'available').map((vehicle) => (
-                              <SelectItem key={vehicle.id} value={vehicle.id}>
+                            {motorcycles.filter(m => m.isAvailable).map((motorcycle) => (
+                              <SelectItem key={motorcycle.id} value={motorcycle.id}>
                                 <div className="flex items-center gap-2">
                                   <Car className="h-4 w-4" />
                                   <div>
-                                    <div className="font-medium">{vehicle.brand} {vehicle.model}</div>
+                                    <div className="font-medium">{motorcycle.brand} {motorcycle.model}</div>
                                     <div className="text-xs text-muted-foreground">
-                                      {vehicle.plate} • {formatCurrency(vehicle.dailyRate)}/dia
+                                      {motorcycle.plate} • {formatCurrency(motorcycle.dailyRate)}/dia
                                     </div>
                                   </div>
                                 </div>
@@ -405,9 +416,9 @@ export default function ContratoForm() {
                           />
                         </FormControl>
                         <FormDescription>
-                          {selectedVehicle && (
+                          {selectedMotorcycle && (
                             <span className="text-primary">
-                              Valor sugerido para este veículo: {formatCurrency(selectedVehicle.dailyRate)}
+                              Valor sugerido para este veículo: {formatCurrency(selectedMotorcycle.dailyRate)}
                             </span>
                           )}
                         </FormDescription>
@@ -421,17 +432,18 @@ export default function ContratoForm() {
               {/* Additional Notes */}
               <Card className="shadow-card">
                 <CardHeader>
-                  <CardTitle>Observações</CardTitle>
+                  <CardTitle>Observações e Documentos</CardTitle>
                   <CardDescription>
-                    Informações adicionais sobre o contrato
+                    Informações adicionais e upload do contrato
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="notes"
+                    name="observations"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Observações</FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Digite observações adicionais sobre o contrato..."
@@ -443,6 +455,48 @@ export default function ContratoForm() {
                       </FormItem>
                     )}
                   />
+
+                  <div>
+                    <FormLabel>Arquivo do Contrato (PDF)</FormLabel>
+                    <div className="mt-2">
+                      {(contractFile || existingFileUrl) ? (
+                        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="text-sm flex-1">
+                            {contractFile?.name || 'Arquivo existente'}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleRemoveFile}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            id="contract-file"
+                          />
+                          <label
+                            htmlFor="contract-file"
+                            className="flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                          >
+                            <Upload className="h-4 w-4" />
+                            <span className="text-sm">Escolher arquivo</span>
+                          </label>
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Arquivo PDF, máximo 5MB
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -477,23 +531,23 @@ export default function ContratoForm() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {form.watch('clientId') && (
+                  {form.watch('customerId') && (
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Cliente</div>
                       <div className="text-sm">
-                        {mockClients.find(c => c.id === form.watch('clientId'))?.name || 'Não selecionado'}
+                        {customers.find(c => c.id === form.watch('customerId'))?.fullName || 'Não selecionado'}
                       </div>
                     </div>
                   )}
 
-                  {selectedVehicle && (
+                  {selectedMotorcycle && (
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Veículo</div>
                       <div className="text-sm">
-                        {selectedVehicle.brand} {selectedVehicle.model}
+                        {selectedMotorcycle.brand} {selectedMotorcycle.model}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Placa: {selectedVehicle.plate}
+                        Placa: {selectedMotorcycle.plate}
                       </div>
                     </div>
                   )}
