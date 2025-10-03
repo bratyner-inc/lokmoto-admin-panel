@@ -197,11 +197,17 @@ export default function SignUp() {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex justify-center">
+          <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
               Já tem uma conta?{" "}
-              <a href="/login" className="text-primary hover:underline">
+              <a href="/login" className="text-primary hover:underline font-medium">
                 Fazer login
+              </a>
+            </div>
+            <div className="text-sm text-center text-muted-foreground">
+              É um cliente?{" "}
+              <a href="/customer-signup" className="text-primary hover:underline font-medium">
+                Cadastre-se aqui
               </a>
             </div>
           </CardFooter>

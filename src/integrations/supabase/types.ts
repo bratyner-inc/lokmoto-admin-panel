@@ -225,6 +225,65 @@ export type Database = {
           },
         ]
       }
+      customer_rental_company_links: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          proposal_id: string | null
+          rental_company_id: string
+          updated_at: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          proposal_id?: string | null
+          rental_company_id: string
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          proposal_id?: string | null
+          rental_company_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_rental_company_links_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_rental_company_links_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_rental_company_links_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_rental_company_links_rental_company_id_fkey"
+            columns: ["rental_company_id"]
+            isOneToOne: false
+            referencedRelation: "rental_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string

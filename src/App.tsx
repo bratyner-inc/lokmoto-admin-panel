@@ -10,6 +10,7 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import SignUp from "./pages/SignUp";
+import CustomerSignUp from "./pages/CustomerSignUp";
 import Dashboard from "./pages/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,11 @@ const App = () => (
           <Route path="/sign-up" element={
             <PublicRoute>
               <SignUp />
+            </PublicRoute>
+          } />
+          <Route path="/customer-signup" element={
+            <PublicRoute>
+              <CustomerSignUp />
             </PublicRoute>
           } />
           <Route path="/forgot-password" element={

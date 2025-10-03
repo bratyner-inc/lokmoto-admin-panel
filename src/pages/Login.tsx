@@ -129,6 +129,10 @@ export default function Login() {
               <a href="/sign-up" className="text-primary hover:underline">
                 Cadastre sua locadora
               </a>
+              {" ou "}
+              <a href="/customer-signup" className="text-primary hover:underline">
+                cadastre-se como cliente
+              </a>
             </div>
           </CardFooter>
         </Card>

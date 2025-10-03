@@ -76,76 +76,95 @@ export const useAuthV2 = () => {
   };
 
   const signUp = async (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     role: UserRole,
     profileData: {
-      fullName: string;
-      phone: string;
-      documentId?: string; // CPF for customers
-      cnpj?: string; // For rental companies
-      tradingName?: string; // For rental companies
-      companyName?: string; // For rental companies
+      fullName?: string;
+      tradingName?: string;
+      companyName?: string;
+      cnpj?: string;
+      documentId?: string;
+      phone?: string;
     }
   ) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          role,
-          full_name: profileData.fullName,
-          phone: profileData.phone,
-        },
-      },
-    });
-    
-    if (error || !data.user) {
-      return { data, error };
-    }
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      // Signup with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            role,
+            full_name: profileData.fullName,
+            trading_name: profileData.tradingName,
+            company_name: profileData.companyName,
+            cnpj: profileData.cnpj,
+            document_id: profileData.documentId,
+            phone: profileData.phone,
+          }
+        }
+      });
 
-    // Create user_role record
-    await supabase
-      .from('user_roles')
-      .insert({ user_id: data.user.id, role });
+      if (error) throw error;
 
-    // Create profile based on role
-    if (role === 'customer') {
-      await supabase
-        .from('customers')
-        .insert({
-          id: data.user.id,
-          full_name: profileData.fullName,
-          email,
-          phone: profileData.phone,
-          document_id: profileData.documentId || '',
-        });
-    } else if (role === 'rental_company') {
-      await supabase
-        .from('rental_companies')
-        .insert({
-          id: data.user.id,
-          trading_name: profileData.tradingName || '',
-          company_name: profileData.companyName || '',
-          email,
-          phone: profileData.phone,
-          cnpj: profileData.cnpj || '',
-        });
-    } else if (role === 'platform_admin') {
-      await supabase
-        .from('platform_admins')
-        .insert({
-          id: data.user.id,
-          full_name: profileData.fullName,
-          email,
-          role: 'support', // Default role
-        });
+      // For rental companies, create additional records
+      if (role === 'rental_company' && data.user) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: 'rental_company'
+          });
+
+        if (roleError) throw roleError;
+
+        const { error: companyError } = await supabase
+          .from('rental_companies')
+          .insert({
+            id: data.user.id,
+            email: email,
+            trading_name: profileData.tradingName || '',
+            company_name: profileData.companyName || '',
+            cnpj: profileData.cnpj || '',
+            phone: profileData.phone || ''
+          });
+
+        if (companyError) throw companyError;
+      }
+
+      // For platform admins, create additional records
+      if (role === 'platform_admin' && data.user) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: 'platform_admin'
+          });
+
+        if (roleError) throw roleError;
+
+        const { error: adminError } = await supabase
+          .from('platform_admins')
+          .insert({
+            id: data.user.id,
+            email: email,
+            full_name: profileData.fullName || ''
+          });
+
+        if (adminError) throw adminError;
+      }
+
+      // For customers, the trigger will handle user_roles and customers table insertion
+
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      return { data: null, error };
     }
-    
-    return { data, error };
   };
 
   const signOut = async () => {
