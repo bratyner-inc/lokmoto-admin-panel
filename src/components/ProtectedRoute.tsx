@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { UserRole, Permission } from '@/types';
+import { useAuthV2 } from '@/hooks/useAuthV2';
+import { UserRole as AuthUserRole } from '@/hooks/useAuthV2';
+import { UserRole, Permission, ROLE_PERMISSIONS } from '@/types';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -17,7 +18,30 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredPermission,
   redirectTo = '/login'
 }) => {
-  const { isAuthenticated, isLoading, hasRole, hasPermission, user } = useAuth();
+  const { isAuthenticated, isLoading, user, role } = useAuthV2();
+  
+  // Helper functions
+  const hasRole = (checkRole: UserRole) => {
+    if (!role) return false;
+    // Map AuthUserRole to UserRole
+    const roleMap: Record<AuthUserRole, UserRole> = {
+      'customer': UserRole.STORE_EMPLOYEE,
+      'rental_company': UserRole.STORE_ADMIN,
+      'platform_admin': UserRole.GLOBAL_ADMIN,
+    };
+    return roleMap[role] === checkRole;
+  };
+  
+  const hasPermission = (permission: Permission) => {
+    if (!role) return false;
+    const roleMap: Record<AuthUserRole, UserRole> = {
+      'customer': UserRole.STORE_EMPLOYEE,
+      'rental_company': UserRole.STORE_ADMIN,
+      'platform_admin': UserRole.GLOBAL_ADMIN,
+    };
+    const mappedRole = roleMap[role];
+    return ROLE_PERMISSIONS[mappedRole]?.includes(permission) || false;
+  };
   const location = useLocation();
 
   // Loading state

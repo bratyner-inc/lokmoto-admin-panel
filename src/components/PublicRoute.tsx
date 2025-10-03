@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthV2 } from '@/hooks/useAuthV2';
 
 interface PublicRouteProps {
   children: React.ReactNode;
@@ -11,7 +11,7 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
   children,
   redirectTo = '/dashboard'
 }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuthV2();
 
   if (isLoading) {
     return (
