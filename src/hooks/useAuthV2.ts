@@ -46,17 +46,27 @@ export const useAuthV2 = () => {
   }, []);
 
   const fetchUserRole = async (userId: string) => {
+    // Try canonical source: user_roles table
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
       .maybeSingle();
-    
-    if (!error && data) {
+
+    if (!error && data?.role) {
       setRole(data.role as UserRole);
+      return;
+    }
+
+    // Fallback: legacy users may have role in user_metadata
+    const { data: userResp } = await supabase.auth.getUser();
+    const metaRole = (userResp.user?.user_metadata as any)?.role as UserRole | undefined;
+    if (metaRole === 'platform_admin' || metaRole === 'rental_company' || metaRole === 'customer') {
+      setRole(metaRole);
+    } else {
+      setRole(null);
     }
   };
-
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
