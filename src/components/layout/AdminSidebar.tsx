@@ -29,10 +29,10 @@ import {
 // Menu items para Admin Global (platform_admin)
 const globalAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Clientes', url: '/clientes', icon: Users },
-  { title: 'Usuários', url: '/usuarios', icon: UserCog },
-  { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
-  { title: 'Banners', url: '/banners', icon: Image },
+  { title: 'Locadoras', url: '/admin/clientes', icon: Users },
+  { title: 'Usuários', url: '/admin/usuarios', icon: UserCog },
+  { title: 'Financeiro', url: '/admin/financeiro', icon: DollarSign },
+  { title: 'Banners', url: '/admin/banners', icon: Image },
 ];
 
 // Menu items para Admin de Loja (rental_company)
@@ -53,26 +53,26 @@ export const AdminSidebar: React.FC = () => {
 
   // Determinar items do menu baseado no role do usuário
   const menuItems = React.useMemo(() => {
+    console.log('=== AdminSidebar Debug ===', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      role,
+      isPlatformAdmin,
+      isRentalCompany
+    });
+
     if (!user || !role) {
-      console.log('AdminSidebar: No user or role', { user, role });
       return [];
     }
     
-    console.log('AdminSidebar: User role detected', { 
-      role, 
-      isPlatformAdmin, 
-      isRentalCompany 
-    });
-    
     if (isPlatformAdmin) {
-      console.log('AdminSidebar: Showing global admin items');
       return globalAdminItems;
-    } else if (isRentalCompany) {
-      console.log('AdminSidebar: Showing store admin items');
+    }
+    
+    if (isRentalCompany) {
       return storeAdminItems;
     }
     
-    console.log('AdminSidebar: No matching role, returning empty');
     return [];
   }, [user, role, isPlatformAdmin, isRentalCompany]);
 

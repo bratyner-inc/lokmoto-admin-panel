@@ -14,7 +14,7 @@ const BannerForm = lazy(() => import('@/pages/global-admin/BannerForm'));
 
 export const globalAdminRoutes: RouteObject[] = [
   {
-    path: '/clientes',
+    path: '/admin/clientes',
     element: (
       <ProtectedRoute>
         <Clientes />
@@ -22,7 +22,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/clientes/novo',
+    path: '/admin/clientes/novo',
     element: (
       <ProtectedRoute>
         <ClienteForm />
@@ -30,7 +30,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/clientes/editar/:id',
+    path: '/admin/clientes/:id/editar',
     element: (
       <ProtectedRoute>
         <ClienteForm />
@@ -38,7 +38,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/clientes/:id',
+    path: '/admin/clientes/:id',
     element: (
       <ProtectedRoute>
         <ClienteDetalhes />
@@ -46,7 +46,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/usuarios',
+    path: '/admin/usuarios',
     element: (
       <ProtectedRoute>
         <Usuarios />
@@ -54,7 +54,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/usuarios/novo',
+    path: '/admin/usuarios/novo',
     element: (
       <ProtectedRoute>
         <UsuarioForm />
@@ -62,7 +62,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/usuarios/editar/:id',
+    path: '/admin/usuarios/:id/editar',
     element: (
       <ProtectedRoute>
         <UsuarioForm />
@@ -70,7 +70,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/financeiro',
+    path: '/admin/financeiro',
     element: (
       <ProtectedRoute>
         <Financeiro />
@@ -78,7 +78,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/banners',
+    path: '/admin/banners',
     element: (
       <ProtectedRoute>
         <Banners />
@@ -86,7 +86,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/banners/novo',
+    path: '/admin/banners/novo',
     element: (
       <ProtectedRoute>
         <BannerForm />
@@ -94,7 +94,7 @@ export const globalAdminRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/banners/editar/:id',
+    path: '/admin/banners/:id/editar',
     element: (
       <ProtectedRoute>
         <BannerForm />
