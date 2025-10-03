@@ -53,14 +53,26 @@ export const AdminSidebar: React.FC = () => {
 
   // Determinar items do menu baseado no role do usuário
   const menuItems = React.useMemo(() => {
-    if (!user || !role) return [];
+    if (!user || !role) {
+      console.log('AdminSidebar: No user or role', { user, role });
+      return [];
+    }
+    
+    console.log('AdminSidebar: User role detected', { 
+      role, 
+      isPlatformAdmin, 
+      isRentalCompany 
+    });
     
     if (isPlatformAdmin) {
+      console.log('AdminSidebar: Showing global admin items');
       return globalAdminItems;
     } else if (isRentalCompany) {
+      console.log('AdminSidebar: Showing store admin items');
       return storeAdminItems;
     }
     
+    console.log('AdminSidebar: No matching role, returning empty');
     return [];
   }, [user, role, isPlatformAdmin, isRentalCompany]);
 
