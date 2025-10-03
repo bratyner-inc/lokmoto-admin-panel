@@ -1,146 +1,136 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Bike, Lock, Mail } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthV2 } from "@/hooks/useAuthV2";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Loader2, Bike } from "lucide-react";
 
 export default function Login() {
-  const { login, isLoggingIn } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { signIn, signInWithGoogle } = useAuthV2();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(formData);
+    setIsLoading(true);
+    
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast.error(`Erro ao fazer login: ${error.message}`);
+    } else {
+      toast.success("Login realizado com sucesso!");
+      navigate("/dashboard");
+    }
+    
+    setIsLoading(false);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    const { error } = await signInWithGoogle();
+    
+    if (error) {
+      toast.error(`Erro ao fazer login com Google: ${error.message}`);
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-fade-in">
-        {/* Logo e título */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-4 animate-glow">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <Bike className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">LokMoto</h1>
-          <p className="text-white/80">Painel Administrativo</p>
+          <h1 className="text-3xl font-bold mb-2">Lokmoto Admin</h1>
+          <p className="text-muted-foreground">Sistema de Gestão de Locação de Motocicletas</p>
         </div>
 
-        {/* Card de login */}
-        <Card className="shadow-elegant bg-white/95 backdrop-blur border-0">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-semibold text-foreground">
-              Fazer Login
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
+        <Card className="w-full">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+            <CardDescription className="text-center">
               Entre com suas credenciais para acessar o sistema
             </CardDescription>
           </CardHeader>
-          
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  E-mail
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="pl-10 h-11"
-                  />
-                </div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Senha
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Digite sua senha"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="pl-10 pr-10 h-11"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-9 w-9 p-0 hover:bg-transparent"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  "Entrar"
+                )}
+              </Button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Ou</span>
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-11 bg-primary hover:bg-primary-dark text-white font-medium"
-                disabled={isLoggingIn}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
               >
-                {isLoggingIn ? 'Entrando...' : 'Entrar'}
+                Entrar com Google
               </Button>
             </form>
-
-            <Separator className="my-6" />
-
-            <div className="text-center">
-              <Link 
-                to="/forgot-password"
-                className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
-              >
-                Esqueci minha senha
-              </Link>
-            </div>
-
-            {/* Dados de teste */}
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">
-                Dados para teste:
-              </p>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Admin Global:</span>
-                  <span className="font-mono">admin@lokmoto.com / admin123</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Admin Loja:</span>
-                  <span className="font-mono">loja.sp@lokmoto.com / loja123</span>
-                </div>
-              </div>
-            </div>
           </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="text-sm text-center text-muted-foreground">
+              Esqueceu sua senha?{" "}
+              <a href="/forgot-password" className="text-primary hover:underline">
+                Recuperar senha
+              </a>
+            </div>
+            <div className="text-sm text-center text-muted-foreground">
+              Não tem uma conta?{" "}
+              <a href="/sign-up" className="text-primary hover:underline">
+                Cadastre sua locadora
+              </a>
+            </div>
+          </CardFooter>
         </Card>
       </div>
     </div>

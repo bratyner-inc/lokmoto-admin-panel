@@ -9,7 +9,7 @@ import { PublicRoute } from "@/components/PublicRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
-import Auth from "./pages/Auth";
+import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
@@ -26,14 +26,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
-          <Route path="/auth" element={
-            <PublicRoute>
-              <Auth />
-            </PublicRoute>
-          } />
           <Route path="/login" element={
             <PublicRoute>
               <Login />
+            </PublicRoute>
+          } />
+          <Route path="/sign-up" element={
+            <PublicRoute>
+              <SignUp />
             </PublicRoute>
           } />
           <Route path="/forgot-password" element={
