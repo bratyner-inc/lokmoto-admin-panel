@@ -3,4 +3,5 @@ export * from './IMotorcycleRepository';
 export * from './IProposalRepository';
 export * from './IVehicleCategoryRepository';
 export * from './IRentalCompanyRepository';
+export * from './IContractRepository';
 

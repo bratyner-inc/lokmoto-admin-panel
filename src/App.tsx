@@ -9,7 +9,7 @@ import { PublicRoute } from "@/components/PublicRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./presentation/pages/store-admin/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import { globalAdminRoutes } from "./routes/globalAdminRoutes";

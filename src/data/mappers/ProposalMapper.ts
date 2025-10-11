@@ -3,6 +3,7 @@ import { Proposal, CreateProposalDTO, UpdateProposalDTO, ProposalStatus } from '
 // Database representation
 export interface ProposalDB {
   id: string;
+  proposal_number: string;
   customer_id: string;
   motorcycle_id: string;
   rental_company_id: string;
@@ -10,7 +11,9 @@ export interface ProposalDB {
   start_date: string;
   end_date: string;
   proposed_daily_rate: number | null;
+  monthly_value: number | null;
   notes: string | null;
+  contract_id: string | null;
   created_at: string;
   updated_at: string;
   
@@ -32,6 +35,7 @@ export class ProposalMapper {
   static toDomain(db: ProposalDB): Proposal {
     return {
       id: db.id,
+      proposalNumber: db.proposal_number,
       customerId: db.customer_id,
       motorcycleId: db.motorcycle_id,
       rentalCompanyId: db.rental_company_id,
@@ -39,7 +43,9 @@ export class ProposalMapper {
       startDate: new Date(db.start_date),
       endDate: new Date(db.end_date),
       proposedDailyRate: db.proposed_daily_rate || undefined,
+      monthlyValue: db.monthly_value || undefined,
       notes: db.notes || undefined,
+      contractId: db.contract_id || undefined,
       createdAt: new Date(db.created_at),
       updatedAt: new Date(db.updated_at),
       customer: db.customers ? {
@@ -56,7 +62,7 @@ export class ProposalMapper {
     };
   }
 
-  static toCreateDB(dto: CreateProposalDTO): Omit<ProposalDB, 'id' | 'created_at' | 'updated_at' | 'customers' | 'motorcycles'> {
+  static toCreateDB(dto: CreateProposalDTO): Omit<ProposalDB, 'id' | 'proposal_number' | 'contract_id' | 'created_at' | 'updated_at' | 'customers' | 'motorcycles'> {
     return {
       customer_id: dto.customerId,
       motorcycle_id: dto.motorcycleId,
@@ -65,6 +71,7 @@ export class ProposalMapper {
       start_date: dto.startDate.toISOString(),
       end_date: dto.endDate.toISOString(),
       proposed_daily_rate: dto.proposedDailyRate || null,
+      monthly_value: dto.monthlyValue || null,
       notes: dto.notes || null,
     };
   }

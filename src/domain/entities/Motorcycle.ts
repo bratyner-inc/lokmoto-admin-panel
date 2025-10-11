@@ -39,6 +39,7 @@ export interface CreateMotorcycleDTO {
   engineCapacity: number;
   dailyRate?: number;
   isAvailable?: boolean;
+  images?: string[];
 }
 
 export interface UpdateMotorcycleDTO {

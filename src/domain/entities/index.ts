@@ -4,5 +4,6 @@ export * from './Motorcycle';
 export * from './VehicleCategory';
 export * from './Customer';
 export * from './Proposal';
+export * from './Contract';
 export * from './PlatformAdmin';
 

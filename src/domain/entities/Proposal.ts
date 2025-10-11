@@ -10,14 +10,17 @@ export type ProposalStatus =
 
 export interface Proposal {
   id: string;
+  proposalNumber: string; // Auto-generated (PROP-YYYY-NNNN)
   customerId: string;
   motorcycleId: string;
   rentalCompanyId: string;
   status: ProposalStatus;
   startDate: Date;
   endDate: Date;
-  proposedDailyRate?: number;
+  proposedDailyRate?: number; // Optional daily rate
+  monthlyValue?: number; // Monthly subscription value
   notes?: string;
+  contractId?: string | null; // Reference to created contract
   createdAt: Date;
   updatedAt: Date;
   
@@ -42,6 +45,7 @@ export interface CreateProposalDTO {
   startDate: Date;
   endDate: Date;
   proposedDailyRate?: number;
+  monthlyValue?: number;
   notes?: string;
 }
 

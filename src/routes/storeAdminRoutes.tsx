@@ -6,16 +6,16 @@ import { UserRole, PERMISSIONS } from '@/types';
 // Lazy loading das páginas do Admin de Loja
 const ClientesLoja = lazy(() => import('@/pages/store-admin/ClientesLoja'));
 const Pagamentos = lazy(() => import('@/pages/store-admin/Pagamentos'));
-const Contratos = lazy(() => import('@/pages/store-admin/Contratos'));
-const ContratoForm = lazy(() => import('@/pages/store-admin/ContratoForm'));
-const ContratoDetalhes = lazy(() => import('@/pages/store-admin/ContratoDetalhes'));
-const Veiculos = lazy(() => import('@/pages/store-admin/Veiculos'));
-const VeiculoDetalhes = lazy(() => import('@/pages/store-admin/VeiculoDetalhes'));
-const VeiculoForm = lazy(() => import('@/pages/store-admin/VeiculoForm'));
+const Contratos = lazy(() => import('@/presentation/pages/store-admin/Contratos'));
+const ContratoForm = lazy(() => import('@/presentation/pages/store-admin/ContratoForm'));
+const ContratoDetalhes = lazy(() => import('@/presentation/pages/store-admin/ContratoDetalhes'));
+const Veiculos = lazy(() => import('@/presentation/pages/store-admin/Veiculos'));
+const VeiculoDetalhes = lazy(() => import('@/presentation/pages/store-admin/VeiculoDetalhes'));
+const VeiculoForm = lazy(() => import('@/presentation/pages/store-admin/VeiculoForm'));
 const Manutencao = lazy(() => import('@/pages/store-admin/Manutencao'));
 const ManutencaoForm = lazy(() => import('@/pages/store-admin/ManutencaoForm'));
 const ManutencaoDetalhes = lazy(() => import('@/pages/store-admin/ManutencaoDetalhes'));
-const Propostas = lazy(() => import('@/pages/store-admin/Propostas'));
+const Propostas = lazy(() => import('@/presentation/pages/store-admin/Propostas'));
 const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
 export const storeAdminRoutes: RouteObject[] = [
@@ -114,7 +114,7 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredRole={UserRole.STORE_ADMIN}
         requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
       >
-        <VeiculoForm mode="create" />
+        <VeiculoForm />
       </ProtectedRoute>
     ),
   },
@@ -125,7 +125,7 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredRole={UserRole.STORE_ADMIN}
         requiredPermission={PERMISSIONS.MANAGE_VEHICLES}
       >
-        <VeiculoForm mode="edit" />
+        <VeiculoForm />
       </ProtectedRoute>
     ),
   },

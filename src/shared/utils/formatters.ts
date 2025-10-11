@@ -15,7 +15,7 @@ export function formatCurrency(value: number): string {
  */
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateFormat('pt-BR').format(d);
+  return new Intl.DateTimeFormat('pt-BR').format(d);
 }
 
 /**
@@ -23,7 +23,7 @@ export function formatDate(date: Date | string): string {
  */
 export function formatDateTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateFormat('pt-BR', {
+  return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(d);
