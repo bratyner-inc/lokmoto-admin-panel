@@ -40,7 +40,7 @@ const globalAdminItems = [
 // Menu items para Admin de Loja
 const storeAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Clientes', url: '/clientes', icon: Users, permission: PERMISSIONS.VIEW_CLIENTS },
+  { title: 'Clientes', url: '/clientes-loja', icon: Users, permission: PERMISSIONS.VIEW_CLIENTS },
   { title: 'Pagamentos', url: '/pagamentos', icon: CreditCard, permission: PERMISSIONS.MANAGE_PAYMENTS },
   { title: 'Contratos', url: '/contratos', icon: FileText, permission: PERMISSIONS.MANAGE_CONTRACTS },
   { title: 'Veículos', url: '/veiculos', icon: Car, permission: PERMISSIONS.MANAGE_VEHICLES },

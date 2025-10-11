@@ -4,4 +4,6 @@ export * from './ProposalMapper';
 export * from './VehicleCategoryMapper';
 export * from './RentalCompanyMapper';
 export * from './ContractMapper';
+export * from './CustomerMapper';
+export * from './TransactionMapper';
 

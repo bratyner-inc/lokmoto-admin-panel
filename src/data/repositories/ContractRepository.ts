@@ -52,9 +52,9 @@ export class ContractRepository implements IContractRepository {
       .from(this.tableName)
       .select(`
         *,
-        customers(id, name, email, phone),
+        customers(id, full_name, email, phone),
         motorcycles(id, brand, model, version, year, plate),
-        proposals(id, proposal_number, status)
+        proposals!contracts_proposal_id_fkey(id, proposal_number, status)
       `)
       .eq('id', id)
       .single();

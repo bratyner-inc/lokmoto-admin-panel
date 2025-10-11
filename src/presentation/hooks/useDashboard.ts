@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { MotorcycleRepository } from '@/data/repositories/MotorcycleRepository';
 import { ProposalRepository } from '@/data/repositories/ProposalRepository';
+import { ContractRepository } from '@/data/repositories/ContractRepository';
+import { TransactionRepository } from '@/data/repositories/TransactionRepository';
 import { DashboardStats } from '@/types';
 import { useAuthStore } from '@/stores/authStore';
 
 const motorcycleRepository = new MotorcycleRepository();
 const proposalRepository = new ProposalRepository();
+const contractRepository = new ContractRepository();
+const transactionRepository = new TransactionRepository();
 
 interface UseDashboardReturn {
   stats: DashboardStats | null;
@@ -30,9 +34,14 @@ export function useDashboard(): UseDashboardReturn {
       setLoading(true);
       setError(null);
 
-      // Fetch motorcycles and proposals in parallel
-      const motorcycles = await motorcycleRepository.getAll(user.id);
-      const proposals = await proposalRepository.getAll({ rentalCompanyId: user.id });
+      // Fetch all data in parallel
+      const [motorcycles, proposals, contracts, totalRevenue, pendingAmount] = await Promise.all([
+        motorcycleRepository.getAll(user.id),
+        proposalRepository.getAll({ rentalCompanyId: user.id }),
+        contractRepository.getByRentalCompanyId(user.id),
+        transactionRepository.getTotalRevenue(),
+        transactionRepository.getPendingAmount(),
+      ]);
 
       // Calculate metrics
       const totalVehicles = motorcycles.length;
@@ -42,6 +51,9 @@ export function useDashboard(): UseDashboardReturn {
       const uniqueCustomerIds = new Set(proposals.map(p => p.customerId));
       const totalClients = uniqueCustomerIds.size;
 
+      // Count active contracts
+      const activeContracts = contracts.filter(c => c.status === 'active').length;
+
       // Count proposals by status
       const pendingProposals = proposals.filter(p => 
         p.status === 'open' || p.status === 'pending'
@@ -50,10 +62,24 @@ export function useDashboard(): UseDashboardReturn {
       // Generate recent activity (last 10 items combined)
       const recentActivity: DashboardStats['recentActivity'] = [];
 
+      // Add recent contracts
+      const sortedContracts = [...contracts]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 3);
+
+      sortedContracts.forEach(contract => {
+        recentActivity.push({
+          id: contract.id,
+          type: 'contract',
+          description: `Contrato ${contract.contractNumber} criado`,
+          timestamp: contract.createdAt.toISOString(),
+        });
+      });
+
       // Add recent proposals
       const sortedProposals = [...proposals]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5);
+        .slice(0, 3);
 
       sortedProposals.forEach(proposal => {
         const statusText = proposal.status === 'accepted' ? 'aceita' 
@@ -62,7 +88,7 @@ export function useDashboard(): UseDashboardReturn {
         
         recentActivity.push({
           id: proposal.id,
-          type: 'contract', // Using 'contract' as closest match to proposals
+          type: 'contract',
           description: `Proposta ${statusText} - ${proposal.motorcycle?.model || 'Moto'}`,
           timestamp: proposal.createdAt.toISOString(),
         });
@@ -71,13 +97,13 @@ export function useDashboard(): UseDashboardReturn {
       // Add recent motorcycles
       const sortedMotorcycles = [...motorcycles]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5);
+        .slice(0, 4);
 
       sortedMotorcycles.forEach(motorcycle => {
         recentActivity.push({
           id: motorcycle.id,
           type: 'vehicle',
-          description: `Moto ${motorcycle.brand} ${motorcycle.model} adicionada ao estoque`,
+          description: `Moto ${motorcycle.brand} ${motorcycle.model} adicionada`,
           timestamp: motorcycle.createdAt.toISOString(),
         });
       });
@@ -92,10 +118,10 @@ export function useDashboard(): UseDashboardReturn {
       const dashboardStats: DashboardStats = {
         totalClients,
         totalVehicles,
-        activeContracts: 0, // Not implemented yet
-        monthlyRevenue: 0, // Not implemented yet
+        activeContracts,
+        monthlyRevenue: totalRevenue,
         availableVehicles,
-        pendingPayments: 0, // Not implemented yet
+        pendingPayments: pendingAmount,
         recentActivity: finalActivity,
       };
 

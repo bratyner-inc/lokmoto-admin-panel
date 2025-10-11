@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +14,10 @@ import {
   BarChart3,
   CreditCard,
   ClipboardList,
-  RefreshCw
+  RefreshCw,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle
 } from 'lucide-react';
 import { UserRole } from '@/types';
 
@@ -90,7 +92,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Clients */}
         <Card className="shadow-card hover:shadow-elegant transition-shadow">
@@ -109,8 +111,8 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold text-primary">{stats?.totalClients.toLocaleString() || '0'}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {stats?.totalClients === 0 
-                    ? 'Aguardando propostas de clientes' 
-                    : 'Clientes únicos com propostas'}
+                    ? 'Aguardando propostas' 
+                    : 'Clientes com propostas'}
                 </p>
               </>
             )}
@@ -132,8 +134,8 @@ export default function Dashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold text-primary">{stats?.totalVehicles || '0'}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-success font-medium">{stats?.availableVehicles || 0} disponíveis</span>
+                <p className="text-xs text-success font-medium">
+                  {stats?.availableVehicles || 0} disponíveis
                 </p>
               </>
             )}
@@ -154,20 +156,20 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-muted-foreground">{stats?.activeContracts || '0'}</div>
+                <div className="text-2xl font-bold text-success">{stats?.activeContracts || '0'}</div>
                 <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  Não implementado
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Gerando receita mensal
                 </p>
               </>
             )}
           </CardContent>
         </Card>
 
-        {/* Monthly Revenue */}
+        {/* Total Revenue */}
         <Card className="shadow-card hover:shadow-elegant transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -178,10 +180,89 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-muted-foreground">{formatCurrency(stats?.monthlyRevenue || 0)}</div>
+                <div className="text-2xl font-bold text-success">{formatCurrency(stats?.monthlyRevenue || 0)}</div>
                 <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  Não implementado
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Pagamentos recebidos
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Stats Cards Row 2 - Financial Details */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Pending Payments */}
+        <Card className="shadow-card hover:shadow-elegant transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pagamentos Pendentes</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-24 mb-2" />
+                <Skeleton className="h-4 w-32" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-warning">{formatCurrency(stats?.pendingPayments || 0)}</div>
+                <p className="text-xs text-muted-foreground flex items-center mt-1">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Aguardando recebimento
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Vehicles Available */}
+        <Card className="shadow-card hover:shadow-elegant transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Motos Disponíveis</CardTitle>
+            <Car className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-28" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-primary">{stats?.availableVehicles || '0'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.totalVehicles ? 
+                    `${Math.round((stats.availableVehicles / stats.totalVehicles) * 100)}% do estoque` 
+                    : 'Nenhuma moto cadastrada'}
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Occupancy Rate */}
+        <Card className="shadow-card hover:shadow-elegant transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Taxa de Ocupação</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-primary">
+                  {stats?.totalVehicles ? 
+                    `${Math.round(((stats.totalVehicles - stats.availableVehicles) / stats.totalVehicles) * 100)}%` 
+                    : '0%'}
+                </div>
+                <p className="text-xs text-muted-foreground flex items-center mt-1">
+                  {stats?.activeContracts || 0} de {stats?.totalVehicles || 0} motos alugadas
                 </p>
               </>
             )}
@@ -191,25 +272,112 @@ export default function Dashboard() {
 
       {/* Charts and Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart placeholder */}
+        {/* Revenue Chart */}
         <Card className="lg:col-span-2 shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
-              Receita dos Últimos Meses
+              Visão Geral Financeira
             </CardTitle>
             <CardDescription>
-              Evolução da receita mensal nos últimos 6 meses
+              Estatísticas de receitas e contratos
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center bg-muted/20 rounded-lg border-2 border-dashed border-muted">
-              <div className="text-center">
-                <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground font-medium">Gráfico de Receita</p>
-                <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
+            {loading ? (
+              <Skeleton className="h-64 w-full" />
+            ) : (
+              <div className="space-y-6">
+                {/* Simple Visual Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-muted-foreground">Recebido</span>
+                      <TrendingUp className="h-4 w-4 text-success" />
+                    </div>
+                    <div className="text-2xl font-bold text-success">
+                      {formatCurrency(stats?.monthlyRevenue || 0)}
+                    </div>
+                    <div className="mt-2 h-2 bg-success/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-success rounded-full transition-all"
+                        style={{ 
+                          width: `${stats?.monthlyRevenue && stats?.pendingPayments ? 
+                            (stats.monthlyRevenue / (stats.monthlyRevenue + stats.pendingPayments) * 100) : 0}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-warning/10 border border-warning/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-muted-foreground">Pendente</span>
+                      <Clock className="h-4 w-4 text-warning" />
+                    </div>
+                    <div className="text-2xl font-bold text-warning">
+                      {formatCurrency(stats?.pendingPayments || 0)}
+                    </div>
+                    <div className="mt-2 h-2 bg-warning/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-warning rounded-full transition-all"
+                        style={{ 
+                          width: `${stats?.monthlyRevenue && stats?.pendingPayments ? 
+                            (stats.pendingPayments / (stats.monthlyRevenue + stats.pendingPayments) * 100) : 0}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contract Stats */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Contratos Ativos</p>
+                        <p className="text-xs text-muted-foreground">Gerando receita mensal</p>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">
+                      {stats?.activeContracts || 0}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-500/10">
+                        <Car className="h-4 w-4 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Motos Disponíveis</p>
+                        <p className="text-xs text-muted-foreground">Prontas para alugar</p>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-500">
+                      {stats?.availableVehicles || 0}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-500/10">
+                        <Users className="h-4 w-4 text-purple-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Total de Clientes</p>
+                        <p className="text-xs text-muted-foreground">Com propostas enviadas</p>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold text-purple-500">
+                      {stats?.totalClients || 0}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -221,7 +389,7 @@ export default function Dashboard() {
               Atividade Recente
             </CardTitle>
             <CardDescription>
-              Últimas ações realizadas no sistema
+              Últimas ações no sistema
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -281,27 +449,27 @@ export default function Dashboard() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-              <a href="/contratos">
+              <a href="/contratos/novo">
                 <FileText className="h-6 w-6" />
                 <span className="text-sm">Novo Contrato</span>
               </a>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
-              <a href="/veiculos">
+              <a href="/veiculos/novo">
                 <Car className="h-6 w-6" />
-                <span className="text-sm">Ver Veículos</span>
+                <span className="text-sm">Adicionar Moto</span>
               </a>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
               <a href="/pagamentos">
                 <CreditCard className="h-6 w-6" />
-                <span className="text-sm">Pagamentos</span>
+                <span className="text-sm">Ver Pagamentos</span>
               </a>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
               <a href="/propostas">
                 <ClipboardList className="h-6 w-6" />
-                <span className="text-sm">Propostas</span>
+                <span className="text-sm">Ver Propostas</span>
               </a>
             </Button>
           </div>
@@ -310,4 +478,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

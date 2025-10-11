@@ -24,7 +24,7 @@ export interface ContractDB {
 export interface ContractWithDetailsDB extends ContractDB {
   customers?: {
     id: string;
-    name: string;
+    full_name: string;
     email: string;
     phone: string;
   };
@@ -78,7 +78,7 @@ export class ContractMapper {
       ...contract,
       customer: raw.customers ? {
         id: raw.customers.id,
-        name: raw.customers.name,
+        name: raw.customers.full_name,
         email: raw.customers.email,
         phone: raw.customers.phone,
       } : undefined,

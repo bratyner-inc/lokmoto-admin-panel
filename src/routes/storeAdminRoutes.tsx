@@ -4,8 +4,12 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { UserRole, PERMISSIONS } from '@/types';
 
 // Lazy loading das páginas do Admin de Loja
-const ClientesLoja = lazy(() => import('@/pages/store-admin/ClientesLoja'));
-const Pagamentos = lazy(() => import('@/pages/store-admin/Pagamentos'));
+const ClientesLoja = lazy(() => import('@/presentation/pages/store-admin/ClientesLoja'));
+const ClienteLojaForm = lazy(() => import('@/presentation/pages/store-admin/ClienteLojaForm'));
+const ClienteLojaDetalhes = lazy(() => import('@/presentation/pages/store-admin/ClienteLojaDetalhes'));
+const Pagamentos = lazy(() => import('@/presentation/pages/store-admin/Pagamentos'));
+const PagamentoForm = lazy(() => import('@/presentation/pages/store-admin/PagamentoForm'));
+const PagamentoDetalhes = lazy(() => import('@/presentation/pages/store-admin/PagamentoDetalhes'));
 const Contratos = lazy(() => import('@/presentation/pages/store-admin/Contratos'));
 const ContratoForm = lazy(() => import('@/presentation/pages/store-admin/ContratoForm'));
 const ContratoDetalhes = lazy(() => import('@/presentation/pages/store-admin/ContratoDetalhes'));
@@ -20,13 +24,46 @@ const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
 export const storeAdminRoutes: RouteObject[] = [
   {
-    path: '/clientes',
+    path: '/clientes-loja',
     element: (
       <ProtectedRoute 
         requiredRole={UserRole.STORE_ADMIN}
         requiredPermission={PERMISSIONS.VIEW_CLIENTS}
       >
         <ClientesLoja />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes-loja/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
+      >
+        <ClienteLojaForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes-loja/editar/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_CLIENTS}
+      >
+        <ClienteLojaForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/clientes-loja/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_CLIENTS}
+      >
+        <ClienteLojaDetalhes />
       </ProtectedRoute>
     ),
   },
@@ -38,6 +75,28 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_PAYMENTS}
       >
         <Pagamentos />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/pagamentos/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_PAYMENTS}
+      >
+        <PagamentoForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/pagamentos/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.MANAGE_PAYMENTS}
+      >
+        <PagamentoDetalhes />
       </ProtectedRoute>
     ),
   },

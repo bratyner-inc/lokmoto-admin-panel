@@ -3,4 +3,6 @@ export * from './MotorcycleRepository';
 export * from './ProposalRepository';
 export * from './VehicleCategoryRepository';
 export * from './ContractRepository';
+export * from './CustomerRepository';
+export * from './TransactionRepository';
 

@@ -17,6 +17,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useProposals } from '@/presentation/hooks/useProposals';
+import { useContract } from '@/presentation/hooks/useContracts';
 import { useAuth } from '@/hooks/useAuth';
 import { ContractRepository } from '@/data/repositories/ContractRepository';
 import { formatCurrency } from '@/shared/utils/formatters';
@@ -40,6 +41,7 @@ export default function ContratoForm() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { proposals, loading: loadingProposals } = useProposals();
+  const { contract, loading: loadingContract } = useContract(id || '');
   
   // Filter only accepted proposals without contracts
   const availableProposals = proposals.filter(p => 
@@ -62,20 +64,24 @@ export default function ContratoForm() {
   const selectedProposalId = form.watch('proposalId');
   const selectedProposal = availableProposals.find(p => p.id === selectedProposalId);
 
-  const onSubmit = async (data: ContractFormData) => {
-    if (!selectedProposal || !user?.id) {
-      toast({
-        title: 'Erro',
-        description: 'Proposta não encontrada ou usuário não autenticado.',
-        variant: 'destructive',
+  // Load contract data when editing
+  useEffect(() => {
+    if (isEditing && contract && !loadingContract) {
+      form.reset({
+        proposalId: contract.proposalId,
+        startDate: contract.startDate,
+        endDate: contract.endDate || undefined,
+        paymentDay: contract.paymentDay,
+        notes: contract.notes || '',
       });
-      return;
     }
+  }, [isEditing, contract, loadingContract, form]);
 
-    if (!selectedProposal.monthlyValue) {
+  const onSubmit = async (data: ContractFormData) => {
+    if (!user?.id) {
       toast({
         title: 'Erro',
-        description: 'A proposta selecionada não possui valor mensal definido.',
+        description: 'Usuário não autenticado.',
         variant: 'destructive',
       });
       return;
@@ -84,34 +90,110 @@ export default function ContratoForm() {
     setIsLoading(true);
     
     try {
-      await contractRepository.create({
-        proposalId: data.proposalId,
-        motorcycleId: selectedProposal.motorcycleId,
-        customerId: selectedProposal.customerId,
-        startDate: data.startDate,
-        endDate: data.endDate || null,
-        monthlyValue: selectedProposal.monthlyValue,
-        paymentDay: data.paymentDay,
-        notes: data.notes || null,
-      }, user.id);
-      
-      toast({
-        title: 'Contrato criado!',
-        description: 'Contrato de assinatura criado com sucesso.',
-      });
+      if (isEditing && id) {
+        // Update existing contract
+        await contractRepository.update(id, {
+          endDate: data.endDate || null,
+          paymentDay: data.paymentDay,
+          notes: data.notes || null,
+        });
+        
+        toast({
+          title: 'Contrato atualizado!',
+          description: 'Contrato atualizado com sucesso.',
+        });
+      } else {
+        // Create new contract
+        if (!selectedProposal) {
+          toast({
+            title: 'Erro',
+            description: 'Proposta não encontrada.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        if (!selectedProposal.monthlyValue) {
+          toast({
+            title: 'Erro',
+            description: 'A proposta selecionada não possui valor mensal definido.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        await contractRepository.create({
+          proposalId: data.proposalId,
+          motorcycleId: selectedProposal.motorcycleId,
+          customerId: selectedProposal.customerId,
+          startDate: data.startDate,
+          endDate: data.endDate || null,
+          monthlyValue: selectedProposal.monthlyValue,
+          paymentDay: data.paymentDay,
+          notes: data.notes || null,
+        }, user.id);
+        
+        toast({
+          title: 'Contrato criado!',
+          description: 'Contrato de assinatura criado com sucesso.',
+        });
+      }
       
       navigate('/contratos');
     } catch (error) {
-      console.error('Error creating contract:', error);
+      console.error('Error saving contract:', error);
       toast({
         title: 'Erro',
-        description: 'Ocorreu um erro ao criar o contrato.',
+        description: `Ocorreu um erro ao ${isEditing ? 'atualizar' : 'criar'} o contrato.`,
         variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading state when editing and contract is being loaded
+  if (isEditing && loadingContract) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/contratos')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Carregando contrato...</h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if editing and contract not found
+  if (isEditing && !contract && !loadingContract) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/contratos')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Contrato não encontrado</h1>
+            <p className="text-muted-foreground">
+              O contrato solicitado não existe ou você não tem permissão para editá-lo.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -130,7 +212,7 @@ export default function ContratoForm() {
             {isEditing ? 'Editar Contrato' : 'Novo Contrato'}
           </h1>
           <p className="text-muted-foreground">
-            {isEditing ? 'Edite as informações do contrato' : 'Crie um novo contrato de assinatura a partir de uma proposta aprovada'}
+            {isEditing ? 'Edite as informações do contrato' : 'Crie um novo contrato de assinatura a partir de uma proposta aceita'}
           </p>
         </div>
       </div>
@@ -148,7 +230,7 @@ export default function ContratoForm() {
                     Proposta
                   </CardTitle>
                   <CardDescription>
-                    Selecione a proposta aceita para criar o contrato
+                    {isEditing ? 'Proposta vinculada ao contrato' : 'Selecione a proposta aceita para criar o contrato'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -161,7 +243,7 @@ export default function ContratoForm() {
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
-                          disabled={loadingProposals}
+                          disabled={loadingProposals || isEditing}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -183,7 +265,7 @@ export default function ContratoForm() {
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          Apenas propostas aceitas e sem contrato são listadas
+                          {isEditing ? 'Proposta não pode ser alterada após criação do contrato' : 'Apenas propostas aceitas e sem contrato são listadas'}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -234,6 +316,7 @@ export default function ContratoForm() {
                             <FormControl>
                               <Button
                                 variant="outline"
+                                disabled={isEditing}
                                 className={cn(
                                   'pl-3 text-left font-normal',
                                   !field.value && 'text-muted-foreground'
@@ -248,20 +331,22 @@ export default function ContratoForm() {
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date < new Date()
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
+                          {!isEditing && (
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date()
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          )}
                         </Popover>
                         <FormDescription>
-                          Data de início da vigência do contrato
+                          {isEditing ? 'Data de início não pode ser alterada' : 'Data de início da vigência do contrato'}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -378,22 +463,35 @@ export default function ContratoForm() {
                   <CardTitle>Resumo</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {selectedProposal ? (
+                  {(isEditing && contract) || selectedProposal ? (
                     <>
                       <div>
                         <div className="text-sm text-muted-foreground mb-1">Valor Mensal</div>
                         <div className="text-2xl font-bold text-primary">
-                          {formatCurrency(selectedProposal.monthlyValue)}
+                          {isEditing && contract 
+                            ? formatCurrency(contract.monthlyValue)
+                            : selectedProposal?.monthlyValue 
+                              ? formatCurrency(selectedProposal.monthlyValue)
+                              : 'N/A'
+                          }
                         </div>
                       </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-1">Proposta</div>
-                        <div className="font-mono text-sm">{selectedProposal.proposalNumber}</div>
-                      </div>
+                      {isEditing && contract && (
+                        <div>
+                          <div className="text-sm text-muted-foreground mb-1">Número do Contrato</div>
+                          <div className="font-mono text-sm">{contract.contractNumber}</div>
+                        </div>
+                      )}
+                      {!isEditing && selectedProposal && (
+                        <div>
+                          <div className="text-sm text-muted-foreground mb-1">Proposta</div>
+                          <div className="font-mono text-sm">{selectedProposal.proposalNumber}</div>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-4">
-                      Selecione uma proposta para ver o resumo
+                      {isEditing ? 'Carregando...' : 'Selecione uma proposta para ver o resumo'}
                     </div>
                   )}
                 </CardContent>
@@ -408,7 +506,7 @@ export default function ContratoForm() {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={isLoading || !selectedProposal}
+                    disabled={isLoading || (!isEditing && !selectedProposal)}
                   >
                     <Save className="h-4 w-4 mr-2" />
                     {isLoading ? 'Salvando...' : (isEditing ? 'Atualizar Contrato' : 'Criar Contrato')}
@@ -431,4 +529,5 @@ export default function ContratoForm() {
     </div>
   );
 }
+
 
