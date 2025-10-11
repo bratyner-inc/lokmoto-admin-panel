@@ -1,0 +1,8 @@
+// Export all domain entities
+export * from './RentalCompany';
+export * from './Motorcycle';
+export * from './VehicleCategory';
+export * from './Customer';
+export * from './Proposal';
+export * from './PlatformAdmin';
+
