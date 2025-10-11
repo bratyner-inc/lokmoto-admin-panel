@@ -24,7 +24,8 @@ import {
   DollarSign,
   ClipboardList,
   PenTool,
-  Bike
+  Bike,
+  Ticket
 } from 'lucide-react';
 import { UserRole, PERMISSIONS } from '@/types';
 
@@ -43,6 +44,7 @@ const storeAdminItems = [
   { title: 'Clientes', url: '/clientes-loja', icon: Users, permission: PERMISSIONS.VIEW_CLIENTS },
   { title: 'Pagamentos', url: '/pagamentos', icon: CreditCard, permission: PERMISSIONS.MANAGE_PAYMENTS },
   { title: 'Contratos', url: '/contratos', icon: FileText, permission: PERMISSIONS.MANAGE_CONTRACTS },
+  { title: 'Tickets', url: '/tickets', icon: Ticket, permission: PERMISSIONS.VIEW_CLIENTS },
   { title: 'Veículos', url: '/veiculos', icon: Car, permission: PERMISSIONS.MANAGE_VEHICLES },
   { title: 'Propostas', url: '/propostas', icon: ClipboardList, permission: PERMISSIONS.MANAGE_PROPOSALS },
   { title: 'Assinatura', url: '/assinatura', icon: PenTool, permission: PERMISSIONS.MANAGE_SUBSCRIPTION },

@@ -6,4 +6,5 @@ export * from './RentalCompanyMapper';
 export * from './ContractMapper';
 export * from './CustomerMapper';
 export * from './TransactionMapper';
+export * from './TicketMapper';
 

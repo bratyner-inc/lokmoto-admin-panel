@@ -7,4 +7,5 @@ export * from './Proposal';
 export * from './Contract';
 export * from './PlatformAdmin';
 export * from './Transaction';
+export * from './Ticket';
 

@@ -20,6 +20,9 @@ const Manutencao = lazy(() => import('@/pages/store-admin/Manutencao'));
 const ManutencaoForm = lazy(() => import('@/pages/store-admin/ManutencaoForm'));
 const ManutencaoDetalhes = lazy(() => import('@/pages/store-admin/ManutencaoDetalhes'));
 const Propostas = lazy(() => import('@/presentation/pages/store-admin/Propostas'));
+const Tickets = lazy(() => import('@/presentation/pages/store-admin/Tickets'));
+const TicketForm = lazy(() => import('@/presentation/pages/store-admin/TicketForm'));
+const TicketDetalhes = lazy(() => import('@/presentation/pages/store-admin/TicketDetalhes'));
 const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
 
 export const storeAdminRoutes: RouteObject[] = [
@@ -240,6 +243,50 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_PROPOSALS}
       >
         <Propostas />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tickets',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_CLIENTS}
+      >
+        <Tickets />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tickets/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_CLIENTS}
+      >
+        <TicketForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tickets/editar/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_CLIENTS}
+      >
+        <TicketForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tickets/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_CLIENTS}
+      >
+        <TicketDetalhes />
       </ProtectedRoute>
     ),
   },

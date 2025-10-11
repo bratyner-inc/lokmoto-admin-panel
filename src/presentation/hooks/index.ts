@@ -5,4 +5,5 @@ export * from './useVehicleCategories';
 export * from './useContracts';
 export * from './useCustomers';
 export * from './useTransactions';
+export * from './useTickets';
 

@@ -5,4 +5,5 @@ export * from './VehicleCategoryRepository';
 export * from './ContractRepository';
 export * from './CustomerRepository';
 export * from './TransactionRepository';
+export * from './TicketRepository';
 
