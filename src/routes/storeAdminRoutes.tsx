@@ -16,14 +16,14 @@ const ContratoDetalhes = lazy(() => import('@/presentation/pages/store-admin/Con
 const Veiculos = lazy(() => import('@/presentation/pages/store-admin/Veiculos'));
 const VeiculoDetalhes = lazy(() => import('@/presentation/pages/store-admin/VeiculoDetalhes'));
 const VeiculoForm = lazy(() => import('@/presentation/pages/store-admin/VeiculoForm'));
-const Manutencao = lazy(() => import('@/pages/store-admin/Manutencao'));
-const ManutencaoForm = lazy(() => import('@/pages/store-admin/ManutencaoForm'));
-const ManutencaoDetalhes = lazy(() => import('@/pages/store-admin/ManutencaoDetalhes'));
+const Manutencao = lazy(() => import('@/presentation/pages/store-admin/Manutencao'));
+const ManutencaoForm = lazy(() => import('@/presentation/pages/store-admin/ManutencaoForm'));
+const ManutencaoDetalhes = lazy(() => import('@/presentation/pages/store-admin/ManutencaoDetalhes'));
 const Propostas = lazy(() => import('@/presentation/pages/store-admin/Propostas'));
 const Tickets = lazy(() => import('@/presentation/pages/store-admin/Tickets'));
 const TicketForm = lazy(() => import('@/presentation/pages/store-admin/TicketForm'));
 const TicketDetalhes = lazy(() => import('@/presentation/pages/store-admin/TicketDetalhes'));
-const Assinatura = lazy(() => import('@/pages/store-admin/Assinatura'));
+const Assinatura = lazy(() => import('@/presentation/pages/store-admin/Assinatura'));
 
 export const storeAdminRoutes: RouteObject[] = [
   {

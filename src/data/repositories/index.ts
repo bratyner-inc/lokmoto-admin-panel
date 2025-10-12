@@ -10,4 +10,5 @@ export * from './RentalCompanyRepository';
 export * from './Safe2PayRepository';
 export * from './UserRepository';
 export * from './BannerRepository';
+export * from './MaintenanceRepository';
 

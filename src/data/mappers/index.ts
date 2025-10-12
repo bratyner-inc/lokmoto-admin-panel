@@ -10,4 +10,5 @@ export * from './TicketMapper';
 export * from './Safe2PayMapper';
 export * from './UserMapper';
 export * from './BannerMapper';
+export * from './MaintenanceMapper';
 

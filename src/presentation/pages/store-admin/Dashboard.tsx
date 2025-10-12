@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { useTicketStats } from '@/presentation/hooks/useTickets';
+import { useMaintenanceStats } from '@/presentation/hooks/useMaintenance';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,7 +23,8 @@ import {
   AlertTriangle,
   Ticket,
   Package,
-  Loader2
+  Loader2,
+  Wrench
 } from 'lucide-react';
 import { UserRole } from '@/types';
 
@@ -30,6 +32,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { stats, loading, error, refresh } = useDashboard();
   const { stats: ticketStats, loading: loadingTickets } = useTicketStats();
+  const { stats: maintenanceStats, loading: loadingMaintenance } = useMaintenanceStats();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -365,6 +368,205 @@ export default function Dashboard() {
                   </div>
                   <p className="text-xs text-muted-foreground flex items-center mt-1">
                     {stats?.activeContracts || 0} de {stats?.totalVehicles || 0} alugadas
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* 🔧 SEÇÃO: MANUTENÇÃO */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Wrench className="h-5 w-5 text-orange-500" />
+          <h2 className="text-xl font-semibold">Manutenção</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Maintenances */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Manutenções</CardTitle>
+              <Wrench className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-primary">{maintenanceStats?.total || '0'}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Registros totais
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pending Maintenances */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Agendadas</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-warning">{maintenanceStats?.byStatus.agendada || '0'}</div>
+                  <p className="text-xs text-muted-foreground flex items-center mt-1">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Aguardando execução
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* In Progress */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-blue-500">{maintenanceStats?.byStatus.em_andamento || '0'}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sendo executadas
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Total Costs */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Custo Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-24 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-destructive">
+                    {formatCurrency(maintenanceStats?.costs.total || 0)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Gastos com manutenção
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Completed */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-success">{maintenanceStats?.byStatus.concluida || '0'}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Finalizadas com sucesso
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Preventive */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Preventivas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-green-500">{maintenanceStats?.byType.preventiva || '0'}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Manutenções preventivas
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Corrective */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Corretivas</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-orange-500">{maintenanceStats?.byType.corretiva || '0'}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Manutenções corretivas
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Accidents */}
+          <Card className="shadow-card hover:shadow-elegant transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sinistros</CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenance ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-red-500">{maintenanceStats?.byType.sinistro || '0'}</div>
+                  <p className="text-xs text-muted-foreground flex items-center mt-1">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Acidentes/Sinistros
                   </p>
                 </>
               )}

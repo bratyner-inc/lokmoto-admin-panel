@@ -14,4 +14,5 @@ export * from './useGlobalCustomers';
 export * from './useUsers';
 export * from './useBanners';
 export * from './useSyncSafe2PayPlans';
+export * from './useMaintenance';
 

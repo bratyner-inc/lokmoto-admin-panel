@@ -11,4 +11,5 @@ export * from './Ticket';
 export * from './Safe2PayPlan';
 export * from './User';
 export * from './Banner';
+export * from './MaintenanceRecord';
 
