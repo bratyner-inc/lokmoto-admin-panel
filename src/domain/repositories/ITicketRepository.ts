@@ -5,8 +5,7 @@ import {
   UpdateTicketDTO,
   TicketStatus,
   TicketPriority,
-  TicketAttachment,
-  CreateTicketAttachmentDTO
+  TicketAttachment
 } from '../entities/Ticket';
 
 export interface ITicketRepository {
@@ -81,7 +80,7 @@ export interface ITicketRepository {
   /**
    * Add an attachment to a ticket
    */
-  addAttachment(data: CreateTicketAttachmentDTO): Promise<TicketAttachment>;
+  addAttachment(ticketId: string, file: File): Promise<TicketAttachment>;
 
   /**
    * Delete an attachment
@@ -92,5 +91,10 @@ export interface ITicketRepository {
    * Count attachments by type for a ticket
    */
   countAttachmentsByType(ticketId: string): Promise<{ documents: number; photos: number }>;
+
+  /**
+   * Get ticket statistics by rental company
+   */
+  getTicketStats(rentalCompanyId: string): Promise<{ open: number; inProgress: number; closed: number; total: number; }>;
 }
 

@@ -7,8 +7,7 @@ import {
   UpdateTicketDTO,
   TicketStatus,
   TicketPriority,
-  TicketAttachment,
-  CreateTicketAttachmentDTO
+  TicketAttachment
 } from '@/domain/entities/Ticket';
 import { TicketMapper, TicketDB, TicketWithDetailsDB, TicketAttachmentDB } from '../mappers/TicketMapper';
 
@@ -310,6 +309,27 @@ export class TicketRepository implements ITicketRepository {
     const photos = data.filter(att => att.file_type === 'photo').length;
 
     return { documents, photos };
+  }
+
+  /**
+   * Get ticket statistics by rental company
+   */
+  async getTicketStats(rentalCompanyId: string): Promise<{ open: number; inProgress: number; closed: number; total: number; }> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .select('status')
+      .eq('rental_company_id', rentalCompanyId);
+
+    if (error) {
+      throw new Error(`Failed to fetch ticket stats: ${error.message}`);
+    }
+
+    const open = data.filter(t => t.status === 'open').length;
+    const inProgress = data.filter(t => t.status === 'in_progress').length;
+    const closed = data.filter(t => t.status === 'closed').length;
+    const total = data.length;
+
+    return { open, inProgress, closed, total };
   }
 }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Ticket, TicketWithDetails, TicketAttachment, UpdateTicketDTO } from '@/domain/entities/Ticket';
 import { TicketRepository } from '@/data/repositories/TicketRepository';
+import { useAuthStore } from '@/stores/authStore';
 
 const ticketRepository = new TicketRepository();
 
@@ -230,5 +231,38 @@ export function useTicketAttachments(ticketId: string) {
     deleteAttachment,
     refetch: fetchAttachments 
   };
+}
+
+/**
+ * Hook to fetch ticket statistics
+ */
+export function useTicketStats() {
+  const { user } = useAuthStore();
+  const [stats, setStats] = useState<{ open: number; inProgress: number; closed: number; total: number; } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchStats = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const stats = await ticketRepository.getTicketStats(user.id);
+      setStats(stats);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, [user?.id]);
+
+  return { stats, loading, error, refresh: fetchStats };
 }
 
