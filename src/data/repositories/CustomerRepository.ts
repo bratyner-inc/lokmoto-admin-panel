@@ -1,5 +1,9 @@
 import { supabase } from '@/infrastructure/config/supabase';
-import { ICustomerRepository } from '@/domain/repositories/ICustomerRepository';
+import { 
+  ICustomerRepository, 
+  CustomerWithRentalCompany, 
+  GlobalCustomerStats 
+} from '@/domain/repositories/ICustomerRepository';
 import { 
   Customer, 
   CustomerWithLicense,
@@ -244,6 +248,108 @@ export class CustomerRepository implements ICustomerRepository {
     if (error) {
       throw new Error(`Failed to delete driver license: ${error.message}`);
     }
+  }
+
+  // Global Admin Methods
+
+  /**
+   * Get all customers across all rental companies (Global Admin only)
+   * Note: RLS policies ensure only platform_admins can access this
+   */
+  async getAllGlobal(): Promise<CustomerWithRentalCompany[]> {
+    // Get customers with contract count
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .select(`
+        *,
+        contracts(count)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch global customers: ${error.message}`);
+    }
+
+    // Map to CustomerWithRentalCompany
+    return data.map(item => {
+      const customer = CustomerMapper.toDomain(item as CustomerDB);
+      const contractsCount = (item.contracts as any)?.[0]?.count || 0;
+      
+      return {
+        ...customer,
+        contractsCount,
+      };
+    });
+  }
+
+  /**
+   * Suspend a customer (Global Admin only)
+   */
+  async suspendCustomer(id: string): Promise<Customer> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .update({ is_active: false })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to suspend customer: ${error.message}`);
+    }
+
+    return CustomerMapper.toDomain(data as CustomerDB);
+  }
+
+  /**
+   * Activate a customer (Global Admin only)
+   */
+  async activateCustomer(id: string): Promise<Customer> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .update({ is_active: true })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to activate customer: ${error.message}`);
+    }
+
+    return CustomerMapper.toDomain(data as CustomerDB);
+  }
+
+  /**
+   * Get global customer statistics (Global Admin only)
+   */
+  async getGlobalStats(): Promise<GlobalCustomerStats> {
+    // Get customer count and active status
+    const { data: customersData, error: customersError } = await supabase
+      .from(this.tableName)
+      .select('is_active');
+
+    if (customersError) {
+      throw new Error(`Failed to fetch customer stats: ${customersError.message}`);
+    }
+
+    // Get total contract count
+    const { count: contractCount, error: contractError } = await supabase
+      .from('contracts')
+      .select('*', { count: 'exact', head: true });
+
+    if (contractError) {
+      throw new Error(`Failed to fetch contract count: ${contractError.message}`);
+    }
+
+    const total = customersData?.length || 0;
+    const active = customersData?.filter(c => c.is_active !== false).length || 0;
+    const inactive = total - active;
+
+    return {
+      total,
+      active,
+      inactive,
+      totalContracts: contractCount || 0,
+    };
   }
 }
 

@@ -77,5 +77,34 @@ export interface ITransactionRepository {
    * Get pending amount (unpaid transactions)
    */
   getPendingAmount(): Promise<number>;
+
+  // Global Admin Methods
+  /**
+   * Get all transactions across all rental companies (Global Admin only)
+   */
+  getAllGlobal(filters?: GlobalTransactionFilters): Promise<TransactionWithDetails[]>;
+
+  /**
+   * Get global transaction statistics (Global Admin only)
+   */
+  getGlobalStats(): Promise<GlobalTransactionStats>;
+}
+
+export interface GlobalTransactionFilters {
+  rentalCompanyId?: string;
+  month?: number;
+  year?: number;
+  status?: TransactionStatus;
+}
+
+export interface GlobalTransactionStats {
+  totalRevenue: number;
+  monthlyRevenue: number;
+  pendingAmount: number;
+  conversionRate: number; // percentage of paid vs total
+  totalTransactions: number;
+  paidTransactions: number;
+  pendingTransactions: number;
+  overdueTransactions: number;
 }
 

@@ -7,4 +7,7 @@ export * from './IContractRepository';
 export * from './ICustomerRepository';
 export * from './ITransactionRepository';
 export * from './ITicketRepository';
+export * from './ISafe2PayRepository';
+export * from './IUserRepository';
+export * from './IBannerRepository';
 

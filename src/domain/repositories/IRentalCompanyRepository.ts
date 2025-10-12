@@ -1,15 +1,33 @@
 import { RentalCompany, CreateRentalCompanyDTO, UpdateRentalCompanyDTO } from '../entities/RentalCompany';
 
+export type SubscriptionStatus = 'active' | 'inactive' | 'pending' | 'canceled';
+
+export interface RentalCompanyStats {
+  total: number;
+  active: number;
+  inactive: number;
+  pending: number;
+  canceled: number;
+  expiringIn7Days: number;
+}
+
 export interface IRentalCompanyRepository {
-  // Query methods
+  // CRUD operations
   getAll(): Promise<RentalCompany[]>;
   getById(id: string): Promise<RentalCompany | null>;
-  getByCnpj(cnpj: string): Promise<RentalCompany | null>;
-  getByEmail(email: string): Promise<RentalCompany | null>;
-  
-  // Mutation methods
-  create(data: CreateRentalCompanyDTO): Promise<RentalCompany>;
+  create(data: CreateRentalCompanyDTO, password: string): Promise<RentalCompany>;
   update(id: string, data: UpdateRentalCompanyDTO): Promise<RentalCompany>;
   delete(id: string): Promise<void>;
+
+  // Filtered queries
+  getByStatus(status: SubscriptionStatus): Promise<RentalCompany[]>;
+  getExpiringSubscriptions(days: number): Promise<RentalCompany[]>;
+
+  // Statistics
+  getStats(): Promise<RentalCompanyStats>;
+
+  // Status management
+  suspendCompany(id: string): Promise<RentalCompany>;
+  activateCompany(id: string): Promise<RentalCompany>;
 }
 

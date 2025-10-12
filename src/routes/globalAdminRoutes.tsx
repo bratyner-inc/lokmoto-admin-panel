@@ -4,16 +4,90 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { UserRole, PERMISSIONS } from '@/types';
 
 // Lazy loading das páginas do Admin Global
-const Clientes = lazy(() => import('@/pages/global-admin/Clientes'));
+const Dashboard = lazy(() => import('@/presentation/pages/global-admin/Dashboard'));
+const Locadoras = lazy(() => import('@/presentation/pages/global-admin/Locadoras'));
+const LocadoraForm = lazy(() => import('@/presentation/pages/global-admin/LocadoraForm'));
+const LocadoraDetalhes = lazy(() => import('@/presentation/pages/global-admin/LocadoraDetalhes'));
+const PlanosSafe2Pay = lazy(() => import('@/presentation/pages/global-admin/PlanosSafe2Pay'));
+const Financeiro = lazy(() => import('@/presentation/pages/global-admin/Financeiro'));
+const Clientes = lazy(() => import('@/presentation/pages/global-admin/Clientes'));
 const ClienteForm = lazy(() => import('@/pages/global-admin/ClienteForm'));
 const ClienteDetalhes = lazy(() => import('@/pages/global-admin/ClienteDetalhes'));
-const Usuarios = lazy(() => import('@/pages/global-admin/Usuarios'));
-const UsuarioForm = lazy(() => import('@/pages/global-admin/UsuarioForm'));
-const Financeiro = lazy(() => import('@/pages/global-admin/Financeiro'));
-const Banners = lazy(() => import('@/pages/global-admin/Banners'));
-const BannerForm = lazy(() => import('@/pages/global-admin/BannerForm'));
+const Usuarios = lazy(() => import('@/presentation/pages/global-admin/Usuarios'));
+const UsuarioForm = lazy(() => import('@/presentation/pages/global-admin/UsuarioForm'));
+const Banners = lazy(() => import('@/presentation/pages/global-admin/Banners'));
+const BannerForm = lazy(() => import('@/presentation/pages/global-admin/BannerForm'));
 
 export const globalAdminRoutes: RouteObject[] = [
+  // Dashboard
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
+      >
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  // Locadoras (Rental Companies)
+  {
+    path: '/locadoras',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
+      >
+        <Locadoras />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/locadoras/novo',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
+      >
+        <LocadoraForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/locadoras/editar/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
+      >
+        <LocadoraForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/locadoras/:id',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
+      >
+        <LocadoraDetalhes />
+      </ProtectedRoute>
+    ),
+  },
+  // Planos Safe2Pay
+  {
+    path: '/planos-safe2pay',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.GLOBAL_ADMIN}
+        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
+      >
+        <PlanosSafe2Pay />
+      </ProtectedRoute>
+    ),
+  },
   {
     path: '/clientes',
     element: (

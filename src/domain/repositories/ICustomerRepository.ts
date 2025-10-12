@@ -65,5 +65,43 @@ export interface ICustomerRepository {
    * Delete driver license
    */
   deleteDriverLicense(id: string): Promise<void>;
+
+  // Global Admin Methods
+  
+  /**
+   * Get all customers across all rental companies (Global Admin only)
+   */
+  getAllGlobal(): Promise<CustomerWithRentalCompany[]>;
+
+  /**
+   * Suspend a customer (Global Admin only)
+   */
+  suspendCustomer(id: string): Promise<Customer>;
+
+  /**
+   * Activate a customer (Global Admin only)
+   */
+  activateCustomer(id: string): Promise<Customer>;
+
+  /**
+   * Get global customer statistics (Global Admin only)
+   */
+  getGlobalStats(): Promise<GlobalCustomerStats>;
+}
+
+export interface CustomerWithRentalCompany extends Customer {
+  rentalCompany?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  contractsCount?: number;
+}
+
+export interface GlobalCustomerStats {
+  total: number;
+  active: number;
+  inactive: number;
+  totalContracts: number;
 }
 

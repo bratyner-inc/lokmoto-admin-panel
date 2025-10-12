@@ -25,13 +25,17 @@ import {
   ClipboardList,
   PenTool,
   Bike,
-  Ticket
+  Ticket,
+  Building2,
+  TrendingUp
 } from 'lucide-react';
 import { UserRole, PERMISSIONS } from '@/types';
 
 // Menu items para Admin Global
 const globalAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'Locadoras', url: '/locadoras', icon: Building2, permission: PERMISSIONS.VIEW_DASHBOARD },
+  { title: 'Planos Safe2Pay', url: '/planos-safe2pay', icon: TrendingUp, permission: PERMISSIONS.VIEW_DASHBOARD },
   { title: 'Clientes', url: '/clientes', icon: Users, permission: PERMISSIONS.MANAGE_CLIENTS },
   { title: 'Usuários', url: '/usuarios', icon: UserCog, permission: PERMISSIONS.MANAGE_USERS },
   { title: 'Financeiro', url: '/financeiro', icon: DollarSign, permission: PERMISSIONS.MANAGE_FINANCIAL },

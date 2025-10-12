@@ -7,6 +7,7 @@ export interface CustomerDB {
   email: string;
   phone: string;
   document_id: string;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +42,7 @@ export class CustomerMapper {
       email: raw.email,
       phone: raw.phone,
       documentId: raw.document_id,
+      isActive: raw.is_active,
       createdAt: new Date(raw.created_at),
       updatedAt: new Date(raw.updated_at),
     };

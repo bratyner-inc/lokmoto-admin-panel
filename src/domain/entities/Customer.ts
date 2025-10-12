@@ -5,6 +5,7 @@ export interface Customer {
   email: string;
   phone: string;
   documentId: string; // CPF
+  isActive?: boolean; // For suspension/activation (Global Admin)
   createdAt: Date;
   updatedAt: Date;
 }

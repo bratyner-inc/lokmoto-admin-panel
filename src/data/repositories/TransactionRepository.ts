@@ -1,5 +1,9 @@
 import { supabase } from '@/infrastructure/config/supabase';
-import { ITransactionRepository } from '@/domain/repositories/ITransactionRepository';
+import { 
+  ITransactionRepository, 
+  GlobalTransactionFilters, 
+  GlobalTransactionStats 
+} from '@/domain/repositories/ITransactionRepository';
 import { 
   Transaction, 
   TransactionWithDetails,
@@ -282,6 +286,107 @@ export class TransactionRepository implements ITransactionRepository {
     }
 
     return data.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0);
+  }
+
+  /**
+   * Get all transactions across all rental companies (Global Admin only)
+   * Note: RLS policies ensure only platform_admins can access this
+   */
+  async getAllGlobal(filters?: GlobalTransactionFilters): Promise<TransactionWithDetails[]> {
+    let query = supabase
+      .from(this.tableName)
+      .select(`
+        *,
+        contracts!transactions_contract_id_fkey(id, contract_number, status),
+        customers(id, full_name, email, phone),
+        rental_companies(id, company_name, email)
+      `)
+      .order('created_at', { ascending: false });
+
+    // Apply filters
+    if (filters?.rentalCompanyId) {
+      query = query.eq('rental_company_id', filters.rentalCompanyId);
+    }
+
+    if (filters?.month && filters?.year) {
+      query = query
+        .eq('reference_month', filters.month)
+        .eq('reference_year', filters.year);
+    }
+
+    if (filters?.status) {
+      query = query.eq('status', filters.status);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch global transactions: ${error.message}`);
+    }
+
+    return data.map(item => TransactionMapper.toDomainWithDetails(item as TransactionWithDetailsDB));
+  }
+
+  /**
+   * Get global transaction statistics (Global Admin only)
+   * Note: RLS policies ensure only platform_admins can access this
+   */
+  async getGlobalStats(): Promise<GlobalTransactionStats> {
+    // Get all transactions
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .select('status, amount, due_date, paid_at, reference_month, reference_year');
+
+    if (error) {
+      throw new Error(`Failed to fetch global transaction stats: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        totalRevenue: 0,
+        monthlyRevenue: 0,
+        pendingAmount: 0,
+        conversionRate: 0,
+        totalTransactions: 0,
+        paidTransactions: 0,
+        pendingTransactions: 0,
+        overdueTransactions: 0,
+      };
+    }
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const paidTransactions = data.filter(t => t.status === 'paid');
+    const pendingTransactions = data.filter(t => t.status === 'pending');
+    const overdueTransactions = data.filter(t => {
+      if (t.status !== 'pending') return false;
+      const dueDate = new Date(t.due_date);
+      return dueDate < now;
+    });
+
+    const monthlyRevenue = paidTransactions
+      .filter(t => t.reference_month === currentMonth && t.reference_year === currentYear)
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+    const totalRevenue = paidTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    const pendingAmount = pendingTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+    const conversionRate = data.length > 0 
+      ? (paidTransactions.length / data.length) * 100 
+      : 0;
+
+    return {
+      totalRevenue,
+      monthlyRevenue,
+      pendingAmount,
+      conversionRate: parseFloat(conversionRate.toFixed(2)),
+      totalTransactions: data.length,
+      paidTransactions: paidTransactions.length,
+      pendingTransactions: pendingTransactions.length,
+      overdueTransactions: overdueTransactions.length,
+    };
   }
 }
 
