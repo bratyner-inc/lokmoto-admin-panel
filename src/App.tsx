@@ -9,9 +9,12 @@ import { PublicRoute } from "@/components/PublicRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./presentation/pages/store-admin/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import TermosDeUso from "./presentation/pages/TermosDeUso";
+import Suspended from "./presentation/pages/Suspended";
+import Onboarding from "./presentation/pages/store-admin/Onboarding";
 import { globalAdminRoutes } from "./routes/globalAdminRoutes";
 import { storeAdminRoutes } from "./routes/storeAdminRoutes";
 
@@ -34,6 +37,15 @@ const App = () => (
             <PublicRoute>
               <ForgotPassword />
             </PublicRoute>
+          } />
+          <Route path="/termos-de-uso" element={<TermosDeUso />} />
+          
+          {/* Semi-Public Routes (requires auth but no layout) */}
+          <Route path="/suspended" element={<Suspended />} />
+          <Route path="/onboarding" element={
+            <ProtectedRoute>
+              <Onboarding />
+            </ProtectedRoute>
           } />
 
           {/* Protected Routes with Layout */}

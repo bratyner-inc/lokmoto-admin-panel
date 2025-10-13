@@ -24,13 +24,19 @@ import {
   DollarSign,
   ClipboardList,
   PenTool,
-  Bike
+  Bike,
+  Ticket,
+  Building2,
+  TrendingUp,
+  Settings
 } from 'lucide-react';
 import { UserRole, PERMISSIONS } from '@/types';
 
 // Menu items para Admin Global
 const globalAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'Locadoras', url: '/locadoras', icon: Building2, permission: PERMISSIONS.VIEW_DASHBOARD },
+  { title: 'Planos Safe2Pay', url: '/planos-safe2pay', icon: TrendingUp, permission: PERMISSIONS.VIEW_DASHBOARD },
   { title: 'Clientes', url: '/clientes', icon: Users, permission: PERMISSIONS.MANAGE_CLIENTS },
   { title: 'Usuários', url: '/usuarios', icon: UserCog, permission: PERMISSIONS.MANAGE_USERS },
   { title: 'Financeiro', url: '/financeiro', icon: DollarSign, permission: PERMISSIONS.MANAGE_FINANCIAL },
@@ -40,12 +46,14 @@ const globalAdminItems = [
 // Menu items para Admin de Loja
 const storeAdminItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Clientes', url: '/clientes', icon: Users, permission: PERMISSIONS.VIEW_CLIENTS },
+  { title: 'Clientes', url: '/clientes-loja', icon: Users, permission: PERMISSIONS.VIEW_CLIENTS },
   { title: 'Pagamentos', url: '/pagamentos', icon: CreditCard, permission: PERMISSIONS.MANAGE_PAYMENTS },
   { title: 'Contratos', url: '/contratos', icon: FileText, permission: PERMISSIONS.MANAGE_CONTRACTS },
+  { title: 'Tickets', url: '/tickets', icon: Ticket, permission: PERMISSIONS.VIEW_CLIENTS },
   { title: 'Veículos', url: '/veiculos', icon: Car, permission: PERMISSIONS.MANAGE_VEHICLES },
   { title: 'Propostas', url: '/propostas', icon: ClipboardList, permission: PERMISSIONS.MANAGE_PROPOSALS },
   { title: 'Assinatura', url: '/assinatura', icon: PenTool, permission: PERMISSIONS.MANAGE_SUBSCRIPTION },
+  { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
 
 export const AdminSidebar: React.FC = () => {
