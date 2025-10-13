@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +22,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   Plus, 
   Search, 
@@ -53,6 +63,9 @@ export default function Locadoras() {
   const [filterStatus, setFilterStatus] = useState<SubscriptionStatus | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [suspendId, setSuspendId] = useState<string | null>(null);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [suspending, setSuspending] = useState(false);
 
   const { companies, loading, error, refresh, deleteCompany, suspendCompany, activateCompany } = useRentalCompanies(filterStatus);
 
@@ -75,12 +88,29 @@ export default function Locadoras() {
     }
   };
 
-  const handleSuspend = async (id: string) => {
+  const handleOpenSuspendModal = (id: string) => {
+    setSuspendId(id);
+    setSuspendReason('');
+  };
+
+  const handleConfirmSuspend = async () => {
+    if (!suspendId) return;
+    
+    if (!suspendReason || suspendReason.trim().length < 10) {
+      toast.error('Motivo da suspensão deve ter no mínimo 10 caracteres');
+      return;
+    }
+
+    setSuspending(true);
     try {
-      await suspendCompany(id);
+      await suspendCompany(suspendId, suspendReason.trim());
       toast.success('Locadora suspensa com sucesso');
+      setSuspendId(null);
+      setSuspendReason('');
     } catch (error) {
       toast.error(`Erro ao suspender locadora: ${(error as Error).message}`);
+    } finally {
+      setSuspending(false);
     }
   };
 
@@ -244,12 +274,12 @@ export default function Locadoras() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {company.subscriptionStatus === 'active' ? (
+                          {company.subscriptionStatus === 'active' || !company.isSuspended ? (
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleSuspend(company.id)}
-                              title="Suspender"
+                              onClick={() => handleOpenSuspendModal(company.id)}
+                              title="Suspender Acesso"
                             >
                               <Ban className="h-4 w-4 text-warning" />
                             </Button>
@@ -258,7 +288,7 @@ export default function Locadoras() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleActivate(company.id)}
-                              title="Ativar"
+                              title="Reativar Acesso"
                             >
                               <CheckCircle className="h-4 w-4 text-success" />
                             </Button>
@@ -281,6 +311,74 @@ export default function Locadoras() {
           )}
         </CardContent>
       </Card>
+
+      {/* Suspend Confirmation Dialog */}
+      <Dialog open={!!suspendId} onOpenChange={() => {
+        setSuspendId(null);
+        setSuspendReason('');
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-warning" />
+              Suspender Acesso da Locadora
+            </DialogTitle>
+            <DialogDescription>
+              O lojista ficará impedido de acessar a plataforma até que o acesso seja reativado.
+              É obrigatório informar o motivo da suspensão.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="suspend-reason" className="text-sm font-medium">
+                Motivo da Suspensão *
+              </Label>
+              <Textarea
+                id="suspend-reason"
+                placeholder="Descreva o motivo da suspensão (mínimo 10 caracteres)..."
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                {suspendReason.length}/10 caracteres mínimos
+              </p>
+            </div>
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                <strong>Atenção:</strong> O lojista não terá acesso ao motivo da suspensão.
+                Ele será informado apenas que sua conta foi suspensa e deverá entrar em contato com o suporte.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSuspendId(null);
+                setSuspendReason('');
+              }}
+              disabled={suspending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmSuspend}
+              disabled={suspending || !suspendReason || suspendReason.trim().length < 10}
+            >
+              {suspending ? 'Suspendendo...' : 'Confirmar Suspensão'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

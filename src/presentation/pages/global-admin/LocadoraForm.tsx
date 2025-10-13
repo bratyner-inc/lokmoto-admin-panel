@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRentalCompany, useRentalCompanies } from '@/presentation/hooks/useRentalCompanies';
 import { useSafe2PayPlans } from '@/presentation/hooks/useSafe2PayPlans';
+import { useViaCep } from '@/presentation/hooks/useViaCep';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Save, Building2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Building2, AlertCircle, Search, Loader2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Validation schema
@@ -25,6 +26,14 @@ const locadoraSchema = z.object({
   subscriptionPlan: z.string().optional(),
   subscriptionStatus: z.enum(['active', 'inactive', 'pending', 'canceled']).optional(),
   subscriptionExpiration: z.string().optional(),
+  // Address fields
+  zipCode: z.string().optional(),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
   bankAgency: z.string().optional(),
   bankAccount: z.string().optional(),
   bankCode: z.string().optional(),
@@ -39,10 +48,12 @@ export default function LocadoraForm() {
   const isEditing = !!id;
 
   const [submitting, setSubmitting] = useState(false);
+  const [cepFetched, setCepFetched] = useState(false);
 
   const { company, loading: loadingCompany } = useRentalCompany(id || '');
   const { createCompany, updateCompany } = useRentalCompanies();
   const { plans, loading: loadingPlans } = useSafe2PayPlans(true);
+  const { loading: searchingCep, error: cepError, searchCep, formatCep } = useViaCep();
 
   const {
     register,
@@ -57,6 +68,26 @@ export default function LocadoraForm() {
     },
   });
 
+  // Handle CEP search
+  const handleSearchCep = async () => {
+    const cep = watch('zipCode');
+    if (!cep || cep.replace(/\D/g, '').length !== 8) {
+      toast.error('Digite um CEP válido com 8 dígitos');
+      return;
+    }
+
+    const address = await searchCep(cep);
+    if (address) {
+      setValue('zipCode', address.zipCode);
+      setValue('street', address.street);
+      setValue('neighborhood', address.neighborhood);
+      setValue('city', address.city);
+      setValue('state', address.state);
+      setCepFetched(true);
+      toast.success('CEP encontrado! Endereço preenchido automaticamente.');
+    }
+  };
+
   // Populate form when editing
   useEffect(() => {
     if (company && isEditing) {
@@ -69,6 +100,17 @@ export default function LocadoraForm() {
       setValue('subscriptionStatus', company.subscriptionStatus);
       if (company.subscriptionExpiration) {
         setValue('subscriptionExpiration', company.subscriptionExpiration.toISOString().split('T')[0]);
+      }
+      // Address
+      if (company.address) {
+        setValue('zipCode', company.address.zipCode || '');
+        setValue('street', company.address.street || '');
+        setValue('number', company.address.number || '');
+        setValue('complement', company.address.complement || '');
+        setValue('neighborhood', company.address.neighborhood || '');
+        setValue('city', company.address.city || '');
+        setValue('state', company.address.state || '');
+        if (company.address.street) setCepFetched(true);
       }
       if (company.bankAccount) {
         setValue('bankAgency', company.bankAccount.agency || '');
@@ -91,6 +133,15 @@ export default function LocadoraForm() {
           subscriptionPlan: data.subscriptionPlan || undefined,
           subscriptionStatus: data.subscriptionStatus,
           subscriptionExpiration: data.subscriptionExpiration ? new Date(data.subscriptionExpiration) : undefined,
+          address: (data.zipCode || data.street || data.city) ? {
+            zipCode: data.zipCode || '',
+            street: data.street || '',
+            number: data.number || '',
+            complement: data.complement || undefined,
+            neighborhood: data.neighborhood || '',
+            city: data.city || '',
+            state: data.state || '',
+          } : undefined,
           bankAccount: (data.bankAgency || data.bankAccount || data.bankCode) ? {
             agency: data.bankAgency || '',
             account: data.bankAccount || '',
@@ -112,6 +163,15 @@ export default function LocadoraForm() {
           phone: data.phone,
           cnpj: data.cnpj,
           subscriptionPlan: data.subscriptionPlan || undefined,
+          address: (data.zipCode || data.street || data.city) ? {
+            zipCode: data.zipCode || '',
+            street: data.street || '',
+            number: data.number || '',
+            complement: data.complement || undefined,
+            neighborhood: data.neighborhood || '',
+            city: data.city || '',
+            state: data.state || '',
+          } : undefined,
           bankAccount: (data.bankAgency || data.bankAccount || data.bankCode) ? {
             agency: data.bankAgency || '',
             account: data.bankAccount || '',
@@ -256,6 +316,122 @@ export default function LocadoraForm() {
                   )}
                 </div>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Address Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Endereço (Opcional)
+            </CardTitle>
+            <CardDescription>
+              Utilize o CEP para preenchimento automático
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* CEP com busca */}
+            <div>
+              <Label htmlFor="zipCode">CEP</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="zipCode"
+                  {...register('zipCode')}
+                  onChange={(e) => {
+                    const formatted = formatCep(e.target.value);
+                    setValue('zipCode', formatted);
+                    setCepFetched(false);
+                  }}
+                  placeholder="00000-000"
+                  maxLength={9}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSearchCep}
+                  disabled={searchingCep || watch('zipCode')?.replace(/\D/g, '').length !== 8}
+                >
+                  {searchingCep ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              {cepError && (
+                <p className="text-xs text-destructive mt-1">{cepError}</p>
+              )}
+              {cepFetched && (
+                <p className="text-xs text-green-600 mt-1">✓ Endereço encontrado</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="street">Rua/Avenida</Label>
+                <Input
+                  id="street"
+                  {...register('street')}
+                  placeholder="Ex: Rua das Flores"
+                  disabled={cepFetched}
+                  className={cepFetched ? 'bg-muted' : ''}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="number">Número</Label>
+                <Input
+                  id="number"
+                  {...register('number')}
+                  placeholder="123"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="complement">Complemento</Label>
+                <Input
+                  id="complement"
+                  {...register('complement')}
+                  placeholder="Apto 45, Bloco B"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="neighborhood">Bairro</Label>
+                <Input
+                  id="neighborhood"
+                  {...register('neighborhood')}
+                  placeholder="Centro"
+                  disabled={cepFetched}
+                  className={cepFetched ? 'bg-muted' : ''}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="city">Cidade</Label>
+                <Input
+                  id="city"
+                  {...register('city')}
+                  placeholder="São Paulo"
+                  disabled={cepFetched}
+                  className={cepFetched ? 'bg-muted' : ''}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="state">Estado (UF)</Label>
+                <Input
+                  id="state"
+                  {...register('state')}
+                  placeholder="SP"
+                  maxLength={2}
+                  disabled={cepFetched}
+                  className={cepFetched ? 'bg-muted' : ''}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

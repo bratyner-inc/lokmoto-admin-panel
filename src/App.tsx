@@ -8,13 +8,16 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PublicRoute } from "@/components/PublicRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./presentation/pages/store-admin/Dashboard";
+import ResetPassword from "./pages/ResetPassword";
+import Dashboard from "./presentation/pages/Dashboard"; // Router component que decide qual dashboard mostrar
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import TermosDeUso from "./presentation/pages/TermosDeUso";
 import Suspended from "./presentation/pages/Suspended";
 import Onboarding from "./presentation/pages/store-admin/Onboarding";
+import LandingPage from "./landing";
 import { globalAdminRoutes } from "./routes/globalAdminRoutes";
 import { storeAdminRoutes } from "./routes/storeAdminRoutes";
 
@@ -27,10 +30,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+          
           {/* Public Routes */}
           <Route path="/login" element={
             <PublicRoute>
               <Login />
+            </PublicRoute>
+          } />
+          <Route path="/register" element={
+            <PublicRoute>
+              <Register />
             </PublicRoute>
           } />
           <Route path="/forgot-password" element={
@@ -38,6 +49,7 @@ const App = () => (
               <ForgotPassword />
             </PublicRoute>
           } />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/termos-de-uso" element={<TermosDeUso />} />
           
           {/* Semi-Public Routes (requires auth but no layout) */}
@@ -89,13 +101,6 @@ const App = () => (
 
           {/* Error Routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/" element={
-            <ProtectedRoute redirectTo="/login">
-              <AdminLayout>
-                <Dashboard />
-              </AdminLayout>
-            </ProtectedRoute>
-          } />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

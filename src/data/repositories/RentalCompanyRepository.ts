@@ -10,22 +10,37 @@ export class RentalCompanyRepository implements IRentalCompanyRepository {
 
   /**
    * Get all rental companies with addresses (polimórfico)
+   * Uses LEFT JOIN to include companies without addresses (incomplete onboarding)
    */
   async getAll(): Promise<RentalCompany[]> {
-    const { data, error } = await supabase
+    // Buscar todas as rental companies
+    const { data: companies, error: companiesError } = await supabase
       .from(this.tableName)
-      .select(`
-        *,
-        addresses!inner(*)
-      `)
-      .eq('addresses.owner_type', 'rental_company')
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      throw new Error(`Failed to fetch rental companies: ${error.message}`);
+    if (companiesError) {
+      throw new Error(`Failed to fetch rental companies: ${companiesError.message}`);
     }
 
-    return (data as any[]).map(RentalCompanyMapper.toDomain);
+    // Para cada company, buscar endereço associado (se houver)
+    const companiesWithAddresses = await Promise.all(
+      companies.map(async (company: any) => {
+        const { data: addressData } = await supabase
+          .from('addresses')
+          .select('*')
+          .eq('owner_type', 'rental_company')
+          .eq('owner_id', company.id)
+          .maybeSingle();
+
+        return {
+          ...company,
+          addresses: addressData || undefined,
+        };
+      })
+    );
+
+    return companiesWithAddresses.map(RentalCompanyMapper.toDomain);
   }
 
   /**
@@ -210,16 +225,76 @@ export class RentalCompanyRepository implements IRentalCompanyRepository {
 
   /**
    * Suspend (deactivate) a rental company
+   * @param id Company ID
+   * @param reason Suspension reason (required)
    */
-  async suspendCompany(id: string): Promise<RentalCompany> {
-    return this.update(id, { subscriptionStatus: 'inactive' });
+  async suspendCompany(id: string, reason: string): Promise<RentalCompany> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .update({
+        is_suspended: true,
+        suspension_reason: reason,
+        suspended_at: new Date().toISOString(),
+        subscription_status: 'inactive',
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to suspend company: ${error.message}`);
+    }
+
+    // Buscar endereço
+    const { data: addressData } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('owner_type', 'rental_company')
+      .eq('owner_id', id)
+      .maybeSingle();
+
+    const combined = {
+      ...data,
+      addresses: addressData || undefined,
+    };
+
+    return RentalCompanyMapper.toDomain(combined as RentalCompanyDB);
   }
 
   /**
-   * Activate a rental company
+   * Activate a rental company (remove suspension)
    */
   async activateCompany(id: string): Promise<RentalCompany> {
-    return this.update(id, { subscriptionStatus: 'active' });
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .update({
+        is_suspended: false,
+        suspension_reason: null,
+        suspended_at: null,
+        subscription_status: 'active',
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to activate company: ${error.message}`);
+    }
+
+    // Buscar endereço
+    const { data: addressData } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('owner_type', 'rental_company')
+      .eq('owner_id', id)
+      .maybeSingle();
+
+    const combined = {
+      ...data,
+      addresses: addressData || undefined,
+    };
+
+    return RentalCompanyMapper.toDomain(combined as RentalCompanyDB);
   }
 
   /**
@@ -253,7 +328,7 @@ export class RentalCompanyRepository implements IRentalCompanyRepository {
         .select('id')
         .eq('owner_type', 'rental_company')
         .eq('owner_id', id)
-        .single();
+        .maybeSingle(); // Changed to maybeSingle() to handle 0 results
 
       if (existingAddress) {
         // Atualizar endereço existente

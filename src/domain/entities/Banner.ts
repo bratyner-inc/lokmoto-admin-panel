@@ -10,6 +10,7 @@ export interface Banner {
   isActive: boolean;
   startDate?: Date;
   endDate?: Date;
+  url?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,7 @@ export interface CreateBannerDTO {
   isActive?: boolean;
   startDate?: Date;
   endDate?: Date;
+  url?: string;
 }
 
 export interface UpdateBannerDTO {
@@ -32,6 +34,7 @@ export interface UpdateBannerDTO {
   isActive?: boolean;
   startDate?: Date;
   endDate?: Date;
+  url?: string;
 }
 
 

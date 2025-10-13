@@ -24,6 +24,7 @@ const bannerSchema = z.object({
   isActive: z.boolean(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  url: z.string().optional(),
 });
 
 type BannerFormData = z.infer<typeof bannerSchema>;
@@ -51,6 +52,7 @@ export default function BannerForm() {
     defaultValues: {
       position: 'hero',
       isActive: true,
+      url: '',
     },
   });
 
@@ -61,6 +63,7 @@ export default function BannerForm() {
       setValue('description', banner.description || '');
       setValue('position', banner.position);
       setValue('isActive', banner.isActive);
+      setValue('url', banner.url || '');
       if (banner.startDate) {
         setValue('startDate', banner.startDate.toISOString().split('T')[0]);
       }
@@ -104,6 +107,7 @@ export default function BannerForm() {
           isActive: data.isActive,
           startDate: data.startDate ? new Date(data.startDate) : undefined,
           endDate: data.endDate ? new Date(data.endDate) : undefined,
+          url: data.url || undefined,
         });
         toast.success('Banner atualizado com sucesso!');
       } else {
@@ -116,6 +120,7 @@ export default function BannerForm() {
           isActive: data.isActive,
           startDate: data.startDate ? new Date(data.startDate) : undefined,
           endDate: data.endDate ? new Date(data.endDate) : undefined,
+          url: data.url || undefined,
         });
         toast.success('Banner criado com sucesso!');
       }
@@ -265,6 +270,18 @@ export default function BannerForm() {
                   />
                   <Label htmlFor="isActive">Banner ativo</Label>
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="url">URL do Link</Label>
+                <Input
+                  id="url"
+                  {...register('url')}
+                  placeholder="https://exemplo.com (opcional)"
+                />
+                {errors.url && (
+                  <p className="text-xs text-destructive mt-1">{errors.url.message}</p>
+                )}
               </div>
             </div>
           </CardContent>

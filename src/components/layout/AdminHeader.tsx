@@ -53,7 +53,7 @@ export const AdminHeader: React.FC = () => {
         {/* Right side - Notifications + User menu */}
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
+          <Button variant="ghost" size="sm" className="hidden">
             <Bell className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full text-xs flex items-center justify-center text-white">
               3
@@ -96,20 +96,6 @@ export const AdminHeader: React.FC = () => {
                   )}
                 </div>
               </DropdownMenuLabel>
-              
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Meu Perfil</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Configurações</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
               
               <DropdownMenuItem 
                 onClick={logout}
