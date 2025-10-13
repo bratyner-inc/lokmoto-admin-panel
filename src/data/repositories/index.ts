@@ -11,4 +11,7 @@ export * from './Safe2PayRepository';
 export * from './UserRepository';
 export * from './BannerRepository';
 export * from './MaintenanceRepository';
+export * from './BankRepository';
+export * from './RentalCompanyBankAccountRepository';
+export * from './AddressRepository';
 

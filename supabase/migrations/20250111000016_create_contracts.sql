@@ -43,6 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_contracts_contract_number ON public.contracts(con
 CREATE INDEX IF NOT EXISTS idx_proposals_contract_id ON public.proposals(contract_id);
 
 -- Add trigger to update updated_at timestamp
+DROP TRIGGER IF EXISTS update_contracts_updated_at ON public.contracts;
 CREATE TRIGGER update_contracts_updated_at
   BEFORE UPDATE ON public.contracts
   FOR EACH ROW
@@ -54,6 +55,7 @@ ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
 -- RLS Policies for contracts
 
 -- Rental Companies: Can view and manage their own contracts
+DROP POLICY IF EXISTS "Rental companies can view their own contracts" ON public.contracts;
 CREATE POLICY "Rental companies can view their own contracts"
   ON public.contracts
   FOR SELECT
@@ -62,6 +64,7 @@ CREATE POLICY "Rental companies can view their own contracts"
     rental_company_id = auth.uid()
   );
 
+DROP POLICY IF EXISTS "Rental companies can create contracts" ON public.contracts;
 CREATE POLICY "Rental companies can create contracts"
   ON public.contracts
   FOR INSERT
@@ -70,6 +73,7 @@ CREATE POLICY "Rental companies can create contracts"
     rental_company_id = auth.uid()
   );
 
+DROP POLICY IF EXISTS "Rental companies can update their own contracts" ON public.contracts;
 CREATE POLICY "Rental companies can update their own contracts"
   ON public.contracts
   FOR UPDATE
@@ -82,6 +86,7 @@ CREATE POLICY "Rental companies can update their own contracts"
   );
 
 -- Customers: Can view their own contracts
+DROP POLICY IF EXISTS "Customers can view their own contracts" ON public.contracts;
 CREATE POLICY "Customers can view their own contracts"
   ON public.contracts
   FOR SELECT
@@ -91,6 +96,7 @@ CREATE POLICY "Customers can view their own contracts"
   );
 
 -- Platform Admins: Full access to all contracts
+DROP POLICY IF EXISTS "Platform admins have full access to contracts" ON public.contracts;
 CREATE POLICY "Platform admins have full access to contracts"
   ON public.contracts
   FOR ALL
@@ -138,6 +144,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trigger_set_contract_number ON public.contracts;
 CREATE TRIGGER trigger_set_contract_number
   BEFORE INSERT ON public.contracts
   FOR EACH ROW
@@ -174,6 +181,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trigger_update_motorcycle_availability_on_contract ON public.contracts;
 CREATE TRIGGER trigger_update_motorcycle_availability_on_contract
   AFTER INSERT OR UPDATE ON public.contracts
   FOR EACH ROW
@@ -194,6 +202,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trigger_update_proposal_on_contract_creation ON public.contracts;
 CREATE TRIGGER trigger_update_proposal_on_contract_creation
   AFTER INSERT ON public.contracts
   FOR EACH ROW

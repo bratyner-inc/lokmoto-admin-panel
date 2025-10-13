@@ -15,4 +15,7 @@ export * from './useUsers';
 export * from './useBanners';
 export * from './useSyncSafe2PayPlans';
 export * from './useMaintenance';
+export * from './useBanks';
+export * from './useBankAccounts';
+export * from './useOnboarding';
 

@@ -27,7 +27,8 @@ import {
   Bike,
   Ticket,
   Building2,
-  TrendingUp
+  TrendingUp,
+  Settings
 } from 'lucide-react';
 import { UserRole, PERMISSIONS } from '@/types';
 
@@ -52,6 +53,7 @@ const storeAdminItems = [
   { title: 'Veículos', url: '/veiculos', icon: Car, permission: PERMISSIONS.MANAGE_VEHICLES },
   { title: 'Propostas', url: '/propostas', icon: ClipboardList, permission: PERMISSIONS.MANAGE_PROPOSALS },
   { title: 'Assinatura', url: '/assinatura', icon: PenTool, permission: PERMISSIONS.MANAGE_SUBSCRIPTION },
+  { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
 
 export const AdminSidebar: React.FC = () => {

@@ -13,6 +13,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Allow authenticated rental companies to upload images
+DROP POLICY IF EXISTS "Rental companies can upload motorcycle images" ON storage.objects;
 CREATE POLICY "Rental companies can upload motorcycle images"
 ON storage.objects
 FOR INSERT
@@ -24,6 +25,7 @@ WITH CHECK (
 );
 
 -- Policy: Allow authenticated rental companies to update their own images
+DROP POLICY IF EXISTS "Rental companies can update their motorcycle images" ON storage.objects;
 CREATE POLICY "Rental companies can update their motorcycle images"
 ON storage.objects
 FOR UPDATE
@@ -40,6 +42,7 @@ WITH CHECK (
 );
 
 -- Policy: Allow authenticated rental companies to delete their own images
+DROP POLICY IF EXISTS "Rental companies can delete their motorcycle images" ON storage.objects;
 CREATE POLICY "Rental companies can delete their motorcycle images"
 ON storage.objects
 FOR DELETE
@@ -51,13 +54,12 @@ USING (
 );
 
 -- Policy: Allow public read access to all motorcycle images
+DROP POLICY IF EXISTS "Anyone can view motorcycle images" ON storage.objects;
 CREATE POLICY "Anyone can view motorcycle images"
 ON storage.objects
 FOR SELECT
 TO public
 USING (bucket_id = 'motorcycles-images');
 
--- Comments for documentation
-COMMENT ON TABLE storage.buckets IS 'Storage buckets configuration';
-COMMENT ON TABLE storage.objects IS 'Storage objects with RLS policies';
+-- Comments removed (no permission to comment on storage schema tables)
 

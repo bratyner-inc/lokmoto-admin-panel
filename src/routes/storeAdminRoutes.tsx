@@ -24,6 +24,7 @@ const Tickets = lazy(() => import('@/presentation/pages/store-admin/Tickets'));
 const TicketForm = lazy(() => import('@/presentation/pages/store-admin/TicketForm'));
 const TicketDetalhes = lazy(() => import('@/presentation/pages/store-admin/TicketDetalhes'));
 const Assinatura = lazy(() => import('@/presentation/pages/store-admin/Assinatura'));
+const Configuracoes = lazy(() => import('@/presentation/pages/store-admin/Configuracoes'));
 
 export const storeAdminRoutes: RouteObject[] = [
   {
@@ -298,6 +299,16 @@ export const storeAdminRoutes: RouteObject[] = [
         requiredPermission={PERMISSIONS.MANAGE_SUBSCRIPTION}
       >
         <Assinatura />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/configuracoes',
+    element: (
+      <ProtectedRoute 
+        requiredRole={UserRole.STORE_ADMIN}
+      >
+        <Configuracoes />
       </ProtectedRoute>
     ),
   },

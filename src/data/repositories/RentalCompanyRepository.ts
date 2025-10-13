@@ -1,43 +1,64 @@
 import { supabase } from '@/infrastructure/config/supabase';
 import { IRentalCompanyRepository, SubscriptionStatus, RentalCompanyStats } from '@/domain/repositories/IRentalCompanyRepository';
-import { RentalCompany, CreateRentalCompanyDTO, UpdateRentalCompanyDTO } from '@/domain/entities/RentalCompany';
+import { RentalCompany, CreateRentalCompanyDTO, UpdateRentalCompanyDTO, UpdateRentalCompanyProfileDTO } from '@/domain/entities/RentalCompany';
 import { RentalCompanyMapper, RentalCompanyDB } from '../mappers/RentalCompanyMapper';
+import { AddressRepository } from './AddressRepository';
 
 export class RentalCompanyRepository implements IRentalCompanyRepository {
   private readonly tableName = 'rental_companies';
+  private addressRepository = new AddressRepository();
 
   /**
-   * Get all rental companies
+   * Get all rental companies with addresses (polimórfico)
    */
   async getAll(): Promise<RentalCompany[]> {
     const { data, error } = await supabase
       .from(this.tableName)
-      .select('*')
+      .select(`
+        *,
+        addresses!inner(*)
+      `)
+      .eq('addresses.owner_type', 'rental_company')
       .order('created_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch rental companies: ${error.message}`);
     }
 
-    return (data as RentalCompanyDB[]).map(RentalCompanyMapper.toDomain);
+    return (data as any[]).map(RentalCompanyMapper.toDomain);
   }
 
   /**
-   * Get rental company by ID
+   * Get rental company by ID with address (polimórfico)
    */
   async getById(id: string): Promise<RentalCompany | null> {
-    const { data, error } = await supabase
+    // Buscar rental company
+    const { data: companyData, error: companyError } = await supabase
       .from(this.tableName)
       .select('*')
       .eq('id', id)
       .single();
 
-    if (error) {
-      if (error.code === 'PGRST116') return null;
-      throw new Error(`Failed to fetch rental company: ${error.message}`);
+    if (companyError) {
+      if (companyError.code === 'PGRST116') return null;
+      throw new Error(`Failed to fetch rental company: ${companyError.message}`);
     }
 
-    return RentalCompanyMapper.toDomain(data as RentalCompanyDB);
+    // Buscar endereço associado (polimórfico)
+    const { data: addressData } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('owner_type', 'rental_company')
+      .eq('owner_id', id)
+      .maybeSingle();
+
+    // Combinar dados
+    const combined = {
+      ...companyData,
+      addresses: addressData || undefined,
+    };
+
+    return RentalCompanyMapper.toDomain(combined as RentalCompanyDB);
   }
 
   /**
@@ -199,6 +220,119 @@ export class RentalCompanyRepository implements IRentalCompanyRepository {
    */
   async activateCompany(id: string): Promise<RentalCompany> {
     return this.update(id, { subscriptionStatus: 'active' });
+  }
+
+  /**
+   * Update rental company profile (Configurações)
+   * Only editable fields: companyName, phone, address (object), logoUrl
+   */
+  async updateProfile(id: string, data: UpdateRentalCompanyProfileDTO): Promise<RentalCompany> {
+    // 1. Atualizar rental company
+    const updateData: Partial<RentalCompanyDB> = {};
+
+    if (data.companyName !== undefined) updateData.company_name = data.companyName;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.logoUrl !== undefined) updateData.logo_url = data.logoUrl || null;
+
+    if (Object.keys(updateData).length > 0) {
+      const { error } = await supabase
+        .from(this.tableName)
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Failed to update profile: ${error.message}`);
+      }
+    }
+
+    // 2. Atualizar ou criar endereço se fornecido (polimórfico)
+    if (data.address) {
+      // Buscar endereço existente
+      const { data: existingAddress } = await supabase
+        .from('addresses')
+        .select('id')
+        .eq('owner_type', 'rental_company')
+        .eq('owner_id', id)
+        .single();
+
+      if (existingAddress) {
+        // Atualizar endereço existente
+        await this.addressRepository.update(existingAddress.id, data.address);
+      } else {
+        // Criar novo endereço
+        await this.addressRepository.create(data.address, 'rental_company', id);
+      }
+    }
+
+    // 3. Retornar rental company atualizado
+    return (await this.getById(id))!;
+  }
+
+  /**
+   * Upload company logo to storage
+   * @param rentalCompanyId ID of the rental company
+   * @param file Logo file to upload
+   * @returns Public URL of the uploaded logo
+   */
+  async uploadLogo(rentalCompanyId: string, file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${rentalCompanyId}/logo.${fileExt}`;
+
+    // Upload file to storage bucket
+    const { error: uploadError } = await supabase.storage
+      .from('company-logos')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      throw new Error(`Failed to upload logo: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data } = supabase.storage.from('company-logos').getPublicUrl(fileName);
+
+    return data.publicUrl;
+  }
+
+  /**
+   * Complete onboarding step
+   * @param id Rental company ID
+   * @param step Step number (0-4)
+   */
+  async completeOnboardingStep(id: string, step: number): Promise<RentalCompany> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .update({ onboarding_step: step })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update onboarding step: ${error.message}`);
+    }
+
+    return RentalCompanyMapper.toDomain(data as RentalCompanyDB);
+  }
+
+  /**
+   * Complete onboarding process
+   * Marks onboarding as completed and sets step to 4
+   */
+  async completeOnboarding(id: string): Promise<RentalCompany> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .update({
+        onboarding_completed: true,
+        onboarding_step: 4,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to complete onboarding: ${error.message}`);
+    }
+
+    return RentalCompanyMapper.toDomain(data as RentalCompanyDB);
   }
 }
 

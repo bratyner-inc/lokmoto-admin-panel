@@ -11,4 +11,7 @@ export * from './ISafe2PayRepository';
 export * from './IUserRepository';
 export * from './IBannerRepository';
 export * from './IMaintenanceRepository';
+export * from './IBankRepository';
+export * from './IRentalCompanyBankAccountRepository';
+export * from './IAddressRepository';
 

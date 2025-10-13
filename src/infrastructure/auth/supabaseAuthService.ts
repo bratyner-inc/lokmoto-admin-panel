@@ -6,13 +6,14 @@ import { User, LoginCredentials, ForgotPasswordData, ApiResponse, UserRole } fro
  * Checks rental_companies, platform_admins, and customers tables
  */
 async function getUserRole(userId: string): Promise<{ role: UserRole; userData: any }> {
-  // Check if user is a platform admin
+  // Check if user is a platform admin (use maybeSingle to allow 0 results)
   const { data: adminData } = await supabase
     .from('platform_admins')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
+  // Only return admin if data exists
   if (adminData) {
     return {
       role: UserRole.GLOBAL_ADMIN,
@@ -27,14 +28,22 @@ async function getUserRole(userId: string): Promise<{ role: UserRole; userData: 
     };
   }
 
-  // Check if user is a rental company
+  // Check if user is a rental company (use maybeSingle to allow 0 results)
   const { data: rentalData } = await supabase
     .from('rental_companies')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   if (rentalData) {
+    // Buscar endereço polimórfico
+    const { data: addressData } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('owner_type', 'rental_company')
+      .eq('owner_id', userId)
+      .maybeSingle();
+
     return {
       role: UserRole.STORE_ADMIN,
       userData: {
@@ -43,18 +52,48 @@ async function getUserRole(userId: string): Promise<{ role: UserRole; userData: 
         email: rentalData.email,
         role: UserRole.STORE_ADMIN,
         storeId: rentalData.id, // rental company ID is the store ID
+        // Additional fields for RentalCompany entity
+        tradingName: rentalData.trading_name,
+        companyName: rentalData.company_name,
+        cnpj: rentalData.cnpj,
+        phone: rentalData.phone,
+        // Address (polimórfico)
+        address: addressData ? {
+          id: addressData.id,
+          street: addressData.street,
+          number: addressData.number,
+          complement: addressData.complement,
+          neighborhood: addressData.district, // district → neighborhood
+          city: addressData.city,
+          state: addressData.state,
+          zipCode: addressData.postal_code, // postal_code → zipCode
+          country: addressData.country,
+        } : undefined,
+        // Suspension fields
+        isSuspended: rentalData.is_suspended || false,
+        suspensionReason: rentalData.suspension_reason || undefined,
+        suspendedAt: rentalData.suspended_at || undefined,
+        // Onboarding fields
+        onboardingCompleted: rentalData.onboarding_completed || false,
+        onboardingStep: rentalData.onboarding_step || 0,
+        // Logo
+        logoUrl: rentalData.logo_url || undefined,
+        // Subscription
+        subscriptionStatus: rentalData.subscription_status,
+        subscriptionPlan: rentalData.subscription_plan,
+        // Metadata
         createdAt: rentalData.created_at,
         updatedAt: rentalData.updated_at,
       },
     };
   }
 
-  // Default to customer role (though this admin panel shouldn't have customers)
+  // Check if user is a customer (use maybeSingle to allow 0 results)
   const { data: customerData } = await supabase
     .from('customers')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   if (customerData) {
     throw new Error('Clientes não têm acesso ao painel administrativo');

@@ -12,4 +12,7 @@ export * from './Safe2PayPlan';
 export * from './User';
 export * from './Banner';
 export * from './MaintenanceRecord';
+export * from './Bank';
+export * from './RentalCompanyBankAccount';
+export * from './Address';
 

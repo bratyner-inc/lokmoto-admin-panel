@@ -1,7 +1,7 @@
 -- Transactions table
 -- Stores payment transactions for contracts and subscriptions
 
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     contract_id UUID REFERENCES contracts(id) ON DELETE CASCADE,
     rental_company_id UUID NOT NULL REFERENCES rental_companies(id) ON DELETE CASCADE,
@@ -36,15 +36,16 @@ CREATE TABLE transactions (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_transactions_contract_id ON transactions(contract_id);
-CREATE INDEX idx_transactions_rental_company_id ON transactions(rental_company_id);
-CREATE INDEX idx_transactions_customer_id ON transactions(customer_id);
-CREATE INDEX idx_transactions_status ON transactions(status);
-CREATE INDEX idx_transactions_due_date ON transactions(due_date);
-CREATE INDEX idx_transactions_safe2pay_transaction_id ON transactions(safe2pay_transaction_id);
-CREATE INDEX idx_transactions_reference ON transactions(reference_year, reference_month);
+CREATE INDEX IF NOT EXISTS idx_transactions_contract_id ON transactions(contract_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_rental_company_id ON transactions(rental_company_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_customer_id ON transactions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_due_date ON transactions(due_date);
+CREATE INDEX IF NOT EXISTS idx_transactions_safe2pay_transaction_id ON transactions(safe2pay_transaction_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_reference ON transactions(reference_year, reference_month);
 
 -- Trigger for updated_at
+DROP TRIGGER IF EXISTS update_transactions_updated_at ON transactions;
 CREATE TRIGGER update_transactions_updated_at
     BEFORE UPDATE ON transactions
     FOR EACH ROW

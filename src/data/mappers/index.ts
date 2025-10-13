@@ -11,4 +11,7 @@ export * from './Safe2PayMapper';
 export * from './UserMapper';
 export * from './BannerMapper';
 export * from './MaintenanceMapper';
+export * from './BankMapper';
+export * from './RentalCompanyBankAccountMapper';
+export * from './AddressMapper';
 
