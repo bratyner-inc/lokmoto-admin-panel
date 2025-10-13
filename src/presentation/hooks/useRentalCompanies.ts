@@ -76,11 +76,11 @@ export function useRentalCompanies(filterStatus?: SubscriptionStatus) {
     }
   };
 
-  const suspendCompany = async (id: string) => {
+  const suspendCompany = async (id: string, reason: string) => {
     setLoading(true);
     setError(null);
     try {
-      const updated = await rentalCompanyRepository.suspendCompany(id);
+      const updated = await rentalCompanyRepository.suspendCompany(id, reason);
       setCompanies(prev => prev.map(c => c.id === id ? updated : c));
       return updated;
     } catch (err) {

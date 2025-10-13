@@ -10,6 +10,7 @@ export interface BannerDB {
   is_active: boolean;
   start_date: string | null;
   end_date: string | null;
+  url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +29,7 @@ export class BannerMapper {
       isActive: db.is_active,
       startDate: db.start_date ? new Date(db.start_date) : undefined,
       endDate: db.end_date ? new Date(db.end_date) : undefined,
+      url: db.url || undefined,
       createdAt: new Date(db.created_at),
       updatedAt: new Date(db.updated_at),
     };

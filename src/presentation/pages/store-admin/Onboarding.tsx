@@ -21,6 +21,7 @@ import { useOnboarding } from '@/presentation/hooks/useOnboarding';
 import { useBanks } from '@/presentation/hooks/useBanks';
 import { useBankAccounts } from '@/presentation/hooks/useBankAccounts';
 import { useSafe2PayPlans } from '@/presentation/hooks/useSafe2PayPlans';
+import { useViaCep } from '@/presentation/hooks/useViaCep';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
 import { RentalCompanyRepository } from '@/data/repositories/RentalCompanyRepository';
@@ -33,6 +34,8 @@ import {
   CreditCard,
   Zap,
   Check,
+  Search,
+  Loader2,
 } from 'lucide-react';
 
 const rentalCompanyRepository = new RentalCompanyRepository();
@@ -46,9 +49,11 @@ export default function Onboarding() {
   const { banks, loading: loadingBanks } = useBanks();
   const { accounts, createAccount } = useBankAccounts();
   const { plans, loading: loadingPlans } = useSafe2PayPlans();
+  const { loading: searchingCep, error: cepError, searchCep, formatCep } = useViaCep();
 
   const [step, setStep] = useState(currentStep);
   const [saving, setSaving] = useState(false);
+  const [cepFetched, setCepFetched] = useState(false);
 
   // Refresh user data from server
   const refreshUser = async () => {
@@ -117,6 +122,38 @@ export default function Onboarding() {
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
+
+  const handleSearchCep = async () => {
+    const cep = basicData.address.zipCode;
+    if (!cep || cep.replace(/\D/g, '').length !== 8) {
+      toast({
+        title: 'CEP inválido',
+        description: 'Digite um CEP válido com 8 dígitos.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const address = await searchCep(cep);
+    if (address) {
+      setBasicData({
+        ...basicData,
+        address: {
+          ...basicData.address,
+          zipCode: address.zipCode,
+          street: address.street,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state,
+        },
+      });
+      setCepFetched(true);
+      toast({
+        title: 'CEP encontrado!',
+        description: 'Endereço preenchido automaticamente.',
+      });
+    }
+  };
 
   const handleSaveBasicData = async () => {
     if (!user?.id) return;
@@ -321,6 +358,47 @@ export default function Onboarding() {
               />
             </div>
 
+            {/* CEP - Primeiro campo */}
+            <div className="space-y-2">
+              <Label htmlFor="zipCode">CEP *</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="zipCode"
+                  value={basicData.address.zipCode}
+                  onChange={(e) => {
+                    const formatted = formatCep(e.target.value);
+                    setBasicData({ 
+                      ...basicData, 
+                      address: { ...basicData.address, zipCode: formatted }
+                    });
+                    setCepFetched(false); // Reset quando CEP muda
+                  }}
+                  placeholder="00000-000"
+                  maxLength={9}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSearchCep}
+                  disabled={searchingCep || basicData.address.zipCode.replace(/\D/g, '').length !== 8}
+                >
+                  {searchingCep ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              {cepError && (
+                <p className="text-xs text-destructive">{cepError}</p>
+              )}
+              {cepFetched && (
+                <p className="text-xs text-green-600">✓ Endereço encontrado</p>
+              )}
+            </div>
+
+            {/* Rua - Desabilitado se veio do ViaCEP */}
             <div className="space-y-2">
               <Label htmlFor="street">Rua/Avenida</Label>
               <Input
@@ -331,12 +409,15 @@ export default function Onboarding() {
                   address: { ...basicData.address, street: e.target.value }
                 })}
                 placeholder="Rua das Flores"
+                disabled={cepFetched}
+                className={cepFetched ? 'bg-muted' : ''}
               />
             </div>
 
+            {/* Número e Complemento - Sempre editáveis */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="number">Número</Label>
+                <Label htmlFor="number">Número *</Label>
                 <Input
                   id="number"
                   value={basicData.address.number}
@@ -357,11 +438,12 @@ export default function Onboarding() {
                     ...basicData, 
                     address: { ...basicData.address, complement: e.target.value }
                   })}
-                  placeholder="Apto 45"
+                  placeholder="Apto 45, Bloco B"
                 />
               </div>
             </div>
 
+            {/* Bairro - Desabilitado se veio do ViaCEP */}
             <div className="space-y-2">
               <Label htmlFor="neighborhood">Bairro</Label>
               <Input
@@ -372,10 +454,13 @@ export default function Onboarding() {
                   address: { ...basicData.address, neighborhood: e.target.value }
                 })}
                 placeholder="Centro"
+                disabled={cepFetched}
+                className={cepFetched ? 'bg-muted' : ''}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Cidade e Estado - Desabilitados se veio do ViaCEP */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Cidade</Label>
                 <Input
@@ -386,11 +471,13 @@ export default function Onboarding() {
                     address: { ...basicData.address, city: e.target.value }
                   })}
                   placeholder="São Paulo"
+                  disabled={cepFetched}
+                  className={cepFetched ? 'bg-muted' : ''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="state">UF</Label>
+                <Label htmlFor="state">Estado (UF)</Label>
                 <Input
                   id="state"
                   value={basicData.address.state}
@@ -400,19 +487,8 @@ export default function Onboarding() {
                     address: { ...basicData.address, state: e.target.value.toUpperCase() }
                   })}
                   placeholder="SP"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="zipCode">CEP</Label>
-                <Input
-                  id="zipCode"
-                  value={basicData.address.zipCode}
-                  onChange={(e) => setBasicData({ 
-                    ...basicData, 
-                    address: { ...basicData.address, zipCode: e.target.value }
-                  })}
-                  placeholder="00000-000"
+                  disabled={cepFetched}
+                  className={cepFetched ? 'bg-muted' : ''}
                 />
               </div>
             </div>

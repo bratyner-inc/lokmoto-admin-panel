@@ -18,4 +18,7 @@ export * from './useMaintenance';
 export * from './useBanks';
 export * from './useBankAccounts';
 export * from './useOnboarding';
+export * from './useGlobalDashboardStats';
+export * from './useRecentActivity';
+export * from './useViaCep';
 

@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { UserRole, PERMISSIONS } from '@/types';
 
 // Lazy loading das páginas do Admin Global
-const Dashboard = lazy(() => import('@/presentation/pages/global-admin/Dashboard'));
+// Nota: Dashboard é tratado centralmente no App.tsx
 const Locadoras = lazy(() => import('@/presentation/pages/global-admin/Locadoras'));
 const LocadoraForm = lazy(() => import('@/presentation/pages/global-admin/LocadoraForm'));
 const LocadoraDetalhes = lazy(() => import('@/presentation/pages/global-admin/LocadoraDetalhes'));
@@ -19,18 +19,8 @@ const Banners = lazy(() => import('@/presentation/pages/global-admin/Banners'));
 const BannerForm = lazy(() => import('@/presentation/pages/global-admin/BannerForm'));
 
 export const globalAdminRoutes: RouteObject[] = [
-  // Dashboard
-  {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute 
-        requiredRole={UserRole.GLOBAL_ADMIN}
-        requiredPermission={PERMISSIONS.VIEW_DASHBOARD}
-      >
-        <Dashboard />
-      </ProtectedRoute>
-    ),
-  },
+  // Nota: /dashboard é tratado centralmente no App.tsx e redireciona baseado no role
+  
   // Locadoras (Rental Companies)
   {
     path: '/locadoras',

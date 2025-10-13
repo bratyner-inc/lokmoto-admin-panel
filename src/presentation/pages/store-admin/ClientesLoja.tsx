@@ -73,13 +73,6 @@ export default function ClientesLoja() {
             Gerencie os clientes da sua loja
           </p>
         </div>
-        <Button 
-          className="bg-primary hover:bg-primary-dark"
-          onClick={() => navigate('/clientes-loja/novo')}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Cliente
-        </Button>
       </div>
 
       {/* Search */}
@@ -163,14 +156,8 @@ export default function ClientesLoja() {
               <p className="text-muted-foreground mb-4">
                 {searchTerm 
                   ? 'Tente buscar com outros termos.' 
-                  : 'Cadastre seu primeiro cliente para começar.'}
+                  : 'Você ainda não possui nenhum cliente.'}
               </p>
-              {!searchTerm && (
-                <Button onClick={() => navigate('/clientes-loja/novo')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Cadastrar Cliente
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>

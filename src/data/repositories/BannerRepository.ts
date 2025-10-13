@@ -184,6 +184,7 @@ export class BannerRepository implements IBannerRepository {
       if (data.endDate !== undefined) {
         updateData.end_date = data.endDate ? data.endDate.toISOString() : null;
       }
+      if (data.url !== undefined) updateData.url = data.url;
 
       const { data: updated, error } = await supabase
         .from(this.tableName)

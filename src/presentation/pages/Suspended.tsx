@@ -43,23 +43,20 @@ export default function Suspended() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Motivo da suspensão */}
-          {user?.suspensionReason && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="ml-2">
-                <strong>Motivo:</strong> {user.suspensionReason}
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Alerta de suspensão */}
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="ml-2">
+              Seu acesso à plataforma foi suspenso pela administração. Entre em contato com o suporte para mais informações.
+            </AlertDescription>
+          </Alert>
 
           {/* Informações */}
           <div className="bg-muted p-4 rounded-lg space-y-3">
             <h3 className="font-semibold text-lg">O que isso significa?</h3>
             <p className="text-sm text-muted-foreground">
-              Sua conta foi suspensa e você não pode acessar a plataforma no momento. Isso pode ter 
-              ocorrido devido a violação dos termos de uso, inadimplência, ou outras razões 
-              administrativas.
+              Sua conta foi suspensa e você não pode acessar a plataforma no momento. 
+              Para obter mais informações sobre sua suspensão e como reativar sua conta, entre em contato com nossa equipe de suporte.
             </p>
           </div>
 
