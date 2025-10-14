@@ -34,6 +34,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
+  // Check if user is suspended (only for Store Admin)
+  const isSuspendedPath = location.pathname === '/suspended';
+  if (user.role === UserRole.STORE_ADMIN && user.isSuspended && !isSuspendedPath) {
+    return <Navigate to="/suspended" replace />;
+  }
+
+  // Check if user needs to complete onboarding (only for Store Admin)
+  const onboardingExemptPaths = ['/onboarding', '/suspended', '/logout'];
+  const needsOnboarding =
+    user.role === UserRole.STORE_ADMIN &&
+    !user.onboardingCompleted &&
+    !onboardingExemptPaths.includes(location.pathname);
+
+  if (needsOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   // Check role requirement
   if (requiredRole && !hasRole(requiredRole)) {
     return <Navigate to="/unauthorized" replace />;

@@ -44,6 +44,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
+        {/* Voltar ao site */}
+        <div className="text-center mb-4">
+          <Link to="/" className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-1">
+            ← Voltar ao Site
+          </Link>
+        </div>
+        
         {/* Logo e título */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-4 animate-glow">
@@ -143,29 +150,22 @@ export default function Login() {
 
             <Separator className="my-6" />
 
-            <div className="text-center">
+            <div className="text-center space-y-3">
               <Link 
                 to="/forgot-password"
-                className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
+                className="text-primary hover:text-primary-dark text-sm font-medium transition-colors block"
               >
                 Esqueci minha senha
               </Link>
-            </div>
-
-            {/* Dados de teste */}
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">
-                Dados para teste:
-              </p>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Admin Global:</span>
-                  <span className="font-mono">admin@lokmoto.com / admin123</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Admin Loja:</span>
-                  <span className="font-mono">loja.sp@lokmoto.com / loja123</span>
-                </div>
+              
+              <div className="text-sm text-muted-foreground">
+                Ainda não tem uma conta?{' '}
+                <Link 
+                  to="/register"
+                  className="text-primary hover:text-primary-dark font-medium transition-colors"
+                >
+                  Cadastre-se
+                </Link>
               </div>
             </div>
           </CardContent>
