@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Seu link de acesso - LokMoto</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6; line-height: 1.6;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #d32f2f 0%, #ef5350 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <div style="display: inline-block; background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 12px;">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="white" stroke-width="2"/>
+                        <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="16" r="1" fill="white"/>
+                      </svg>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 16px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">LokMoto</h1>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: bold;">Seu Link de Acesso Rápido 🔐</h2>
+              
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">
+                Você solicitou um link de acesso rápido ao LokMoto. Clique no botão abaixo para fazer login sem precisar digitar sua senha:
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: linear-gradient(135deg, #d32f2f 0%, #ef5350 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);">
+                      Acessar LokMoto
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Info Box -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px; background-color: #eff6ff; border-radius: 8px; padding: 20px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 12px 0; color: #1e40af; font-size: 14px; font-weight: 600;">
+                      ℹ️ Como funciona o Magic Link?
+                    </p>
+                    <p style="margin: 0; color: #1e3a8a; font-size: 14px; line-height: 1.5;">
+                      O Magic Link é uma forma segura e prática de fazer login. Ao clicar no link acima, você será autenticado automaticamente sem precisar digitar sua senha.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 32px 0;">
+                <tr>
+                  <td style="border-top: 1px solid #e5e7eb;"></td>
+                </tr>
+              </table>
+
+              <!-- Alternative Link -->
+              <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px;">
+                Se o botão não funcionar, copie e cole o link abaixo no seu navegador:
+              </p>
+              
+              <p style="margin: 0 0 24px 0; word-break: break-all;">
+                <a href="{{ .ConfirmationURL }}" style="color: #d32f2f; text-decoration: underline; font-size: 14px;">{{ .ConfirmationURL }}</a>
+              </p>
+
+              <!-- Security Notice -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fef2f2; border-left: 4px solid #d32f2f; border-radius: 4px; padding: 16px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.5;">
+                      <strong>⚠️ Segurança:</strong> Este link é válido por 1 hora e só pode ser usado uma vez. Se você não solicitou este acesso, alguém pode estar tentando acessar sua conta. Por segurança, ignore este email e considere alterar sua senha.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Additional Info -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 24px;">
+                <tr>
+                  <td style="padding: 16px; background-color: #f9fafb; border-radius: 8px;">
+                    <p style="margin: 0 0 8px 0; color: #374151; font-size: 14px; font-weight: 600;">
+                      Dica de Segurança:
+                    </p>
+                    <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
+                      Nunca compartilhe este link com outras pessoas. Ele dá acesso direto à sua conta sem necessidade de senha.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">
+                Problemas para acessar? Estamos aqui para ajudar:
+              </p>
+              <p style="margin: 0 0 16px 0;">
+                <a href="mailto:suporte@lokmoto.com.br" style="color: #d32f2f; text-decoration: none; font-weight: 500;">suporte@lokmoto.com.br</a>
+              </p>
+              
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                © 2025 LokMoto. Todos os direitos reservados.
+              </p>
+              <p style="margin: 8px 0 0 0; color: #9ca3af; font-size: 12px;">
+                Sistema de Gestão para Locadoras de Motocicletas
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Confirme a mudança de email - LokMoto</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6; line-height: 1.6;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #d32f2f 0%, #ef5350 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <div style="display: inline-block; background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 12px;">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="white" stroke-width="2"/>
+                        <path d="M3 7L12 13L21 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 16px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">LokMoto</h1>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: bold;">Confirme seu Novo Email 📧</h2>
+              
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">
+                Você solicitou a mudança do email da sua conta no LokMoto. Para concluir esta alteração, precisamos confirmar que você tem acesso a este novo endereço de email.
+              </p>
+
+              <!-- Email Change Info -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                <tr>
+                  <td>
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <span style="color: #6b7280; font-size: 14px;">Email anterior:</span>
+                        </td>
+                        <td style="padding: 8px 0; text-align: right;">
+                          <span style="color: #111827; font-size: 14px; font-weight: 600;">{{ .Email }}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding: 8px 0;">
+                          <div style="border-top: 1px solid #e5e7eb;"></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <span style="color: #6b7280; font-size: 14px;">Novo email:</span>
+                        </td>
+                        <td style="padding: 8px 0; text-align: right;">
+                          <span style="color: #d32f2f; font-size: 14px; font-weight: 600;">{{ .NewEmail }}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 32px 0; color: #4b5563; font-size: 16px;">
+                Clique no botão abaixo para confirmar a mudança:
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: linear-gradient(135deg, #d32f2f 0%, #ef5350 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);">
+                      Confirmar Novo Email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What Happens Next -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px; background-color: #eff6ff; border-radius: 8px; padding: 20px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 12px 0; color: #1e40af; font-size: 14px; font-weight: 600;">
+                      ℹ️ O que acontece depois?
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; color: #1e3a8a; font-size: 14px; line-height: 1.8;">
+                      <li style="margin-bottom: 8px;">Seu email será atualizado imediatamente</li>
+                      <li style="margin-bottom: 8px;">Você usará o novo email para fazer login</li>
+                      <li style="margin-bottom: 8px;">Todas as notificações serão enviadas para o novo email</li>
+                      <li>O email anterior não terá mais acesso à conta</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 32px 0;">
+                <tr>
+                  <td style="border-top: 1px solid #e5e7eb;"></td>
+                </tr>
+              </table>
+
+              <!-- Alternative Link -->
+              <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px;">
+                Se o botão não funcionar, copie e cole o link abaixo no seu navegador:
+              </p>
+              
+              <p style="margin: 0 0 24px 0; word-break: break-all;">
+                <a href="{{ .ConfirmationURL }}" style="color: #d32f2f; text-decoration: underline; font-size: 14px;">{{ .ConfirmationURL }}</a>
+              </p>
+
+              <!-- Security Notice -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fef2f2; border-left: 4px solid #d32f2f; border-radius: 4px; padding: 16px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 12px 0; color: #991b1b; font-size: 14px; line-height: 1.5;">
+                      <strong>⚠️ Importante:</strong> Este link é válido por 24 horas e só pode ser usado uma vez.
+                    </p>
+                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.5;">
+                      <strong>Não foi você?</strong> Se você não solicitou esta mudança, alguém pode estar tentando acessar sua conta. Entre em contato com nosso suporte imediatamente.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">
+                Dúvidas ou problemas? Estamos aqui para ajudar:
+              </p>
+              <p style="margin: 0 0 16px 0;">
+                <a href="mailto:suporte@lokmoto.com.br" style="color: #d32f2f; text-decoration: none; font-weight: 500;">suporte@lokmoto.com.br</a>
+              </p>
+              
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                © 2025 LokMoto. Todos os direitos reservados.
+              </p>
+              <p style="margin: 8px 0 0 0; color: #9ca3af; font-size: 12px;">
+                Sistema de Gestão para Locadoras de Motocicletas
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
