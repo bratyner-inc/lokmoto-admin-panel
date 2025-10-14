@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Bike, Lock, Mail } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Eye, EyeOff, Bike, Lock, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Login() {
+  const location = useLocation();
   const { login, isLoggingIn } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [stateMessage, setStateMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Check for messages from redirect (e.g., email confirmation)
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.message) {
+      setStateMessage({ type: 'success', text: state.message });
+    } else if (state?.error) {
+      setStateMessage({ type: 'error', text: state.error });
+    }
+  }, [location]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +65,21 @@ export default function Login() {
           </CardHeader>
           
           <CardContent>
+            {/* State Messages */}
+            {stateMessage && (
+              <Alert 
+                variant={stateMessage.type === 'error' ? 'destructive' : 'default'} 
+                className="mb-4"
+              >
+                {stateMessage.type === 'success' ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                <AlertDescription>{stateMessage.text}</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
